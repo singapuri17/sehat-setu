@@ -1,24 +1,198 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Activity, AlertTriangle, ArrowLeft, ArrowRight, Baby, BadgeCheck, BarChart3, Bell, Check,
+  ChevronRight, CircleHelp, ClipboardList, Clock3, FileImage, FileText, HeartPulse, Languages,
+  LogIn, Menu, Mic, Paperclip, Pencil, Plus, RefreshCw, Save, Send, Settings, ShieldCheck,
+  Stethoscope, Upload, UserRound, Users, Volume2, X,
+} from "lucide-react";
+import { extractDocument, type ExtractedInformation } from "@/lib/documentService";
+import { speechToText, type SpeechState } from "@/lib/speechService";
+import { demoConsultation } from "@/lib/consultationService";
+import { demoPatients } from "@/lib/patientService";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "MediKiosk — Pre-consultation Intake" },
+      { name: "description", content: "A fictional AI-assisted pre-consultation intake prototype for patients and physicians." },
+      { property: "og:title", content: "MediKiosk — Pre-consultation Intake" },
+      { property: "og:description", content: "A fictional AI-assisted patient intake and physician review prototype." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: MediKiosk,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+type View = "welcome" | "consent" | "details" | "interview" | "documents" | "extracted" | "review" | "success" | "doctorLogin" | "dashboard" | "case";
+type Complaint = "Fever" | "Abdominal pain" | "Headache" | "Cough" | "Chest pain";
+
+const interviewQuestions: Record<Complaint, { question: string; choices?: string[] }[]> = {
+  "Abdominal pain": [
+    { question: "What is your main problem?", choices: ["Pain in my stomach", "Burning feeling", "Something else"] },
+    { question: "Where exactly is the pain?", choices: ["Upper abdomen", "Around the navel", "Lower abdomen", "All over"] },
+    { question: "When did it start?", choices: ["Today", "Yesterday", "A few days ago", "More than a week ago"] },
+    { question: "How severe is the pain?", choices: ["Mild", "Moderate", "Severe"] },
+    { question: "Do you have vomiting?", choices: ["No", "Yes"] },
+    { question: "Any change in bowel movement?", choices: ["No change", "Loose motion", "Constipation"] },
+  ],
+  Fever: [
+    { question: "When did the fever start?", choices: ["Today", "Yesterday", "A few days ago"] },
+    { question: "How high was the fever?", choices: ["I do not know", "Mild", "High"] },
+    { question: "Do you have cough?", choices: ["No", "Yes"] },
+    { question: "Do you have body pain?", choices: ["No", "Yes"] },
+    { question: "Do you have vomiting?", choices: ["No", "Yes"] },
+  ],
+  Headache: [
+    { question: "When did the headache start?", choices: ["Today", "Yesterday", "A few days ago"] },
+    { question: "Where is the pain?", choices: ["Front", "Back", "One side", "All over"] },
+    { question: "How severe is it?", choices: ["Mild", "Moderate", "Severe"] },
+    { question: "Do you feel dizzy?", choices: ["No", "Yes"] },
+  ],
+  Cough: [
+    { question: "When did the cough start?", choices: ["Today", "A few days ago", "More than a week ago"] },
+    { question: "Is there mucus?", choices: ["No", "Yes", "I am not sure"] },
+    { question: "Do you have fever?", choices: ["No", "Yes"] },
+    { question: "Do you feel breathless?", choices: ["No", "Yes"] },
+  ],
+  "Chest pain": [
+    { question: "How severe is the chest pain?", choices: ["Mild", "Moderate", "Severe"] },
+    { question: "Do you feel breathless?", choices: ["No", "Yes"] },
+    { question: "Have you fainted or felt like fainting?", choices: ["No", "Yes"] },
+    { question: "Does it spread to your arm or jaw?", choices: ["No", "Yes"] },
+  ],
+};
+
+const iconMap: Record<string, typeof HeartPulse> = { "Abdominal pain": Activity, Fever: Activity, Headache: CircleHelp, Cough: Volume2, "Chest pain": HeartPulse };
+
+function MediKiosk() {
+  const [view, setView] = useState<View>("welcome");
+  const [language, setLanguage] = useState("English");
+  const [consent, setConsent] = useState(false);
+  const [details, setDetails] = useState({ name: "", age: "", gender: "", complaint: "Abdominal pain" as Complaint });
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [speechState, setSpeechState] = useState<SpeechState>("idle");
+  const [transcription, setTranscription] = useState("");
+  const [documents, setDocuments] = useState<string[]>(["Blood_Report.pdf", "Prescription.jpg"]);
+  const [processing, setProcessing] = useState(false);
+  const [extracted, setExtracted] = useState<ExtractedInformation | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState(demoPatients[0].token);
+
+  const questions = interviewQuestions[details.complaint];
+  const currentQuestion = questions[questionIndex];
+  const hasRedFlag = details.complaint === "Chest pain" && Object.values(answers).some((answer) => ["Severe", "Yes"].includes(answer));
+  const selectedCase = selectedPatient === "A-102" ? demoConsultation : { ...demoConsultation, ...demoPatients.find((p) => p.token === selectedPatient) };
+
+  const startSpeech = async () => {
+    setSpeechState("listening");
+    setTimeout(() => setSpeechState("processing"), 650);
+    const result = await speechToText(language);
+    setTranscription(result.text);
+    setSpeechState("result");
+  };
+
+  const processDocuments = async () => {
+    setProcessing(true);
+    const result = await extractDocument(documents[0] ?? "demo.pdf");
+    setExtracted(result);
+    setProcessing(false);
+    setView("extracted");
+  };
+
+  const patientBack = () => {
+    const previous: Partial<Record<View, View>> = { consent: "welcome", details: "consent", interview: "details", documents: "interview", extracted: "documents", review: "extracted" };
+    setView(previous[view] ?? "welcome");
+  };
+
+  if (["doctorLogin", "dashboard", "case"].includes(view)) {
+    return <DoctorShell view={view} setView={setView} selectedPatient={selectedPatient} setSelectedPatient={setSelectedPatient} selectedCase={selectedCase} />;
+  }
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_8%_0%,color-mix(in_oklab,var(--kiosk-sky)_28%,transparent),transparent_32%),radial-gradient(circle_at_90%_2%,color-mix(in_oklab,var(--kiosk-teal)_24%,transparent),transparent_32%),linear-gradient(135deg,var(--kiosk-cream),color-mix(in_oklab,var(--kiosk-sky)_12%,var(--background)))] text-foreground">
+      <header className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-5 sm:px-10">
+        <div className="flex items-center gap-3">
+          <div className="grid size-12 place-items-center rounded-2xl bg-kiosk-coral text-primary-foreground shadow-sm"><Plus size={28} strokeWidth={3} /></div>
+          <div><p className="text-2xl font-extrabold tracking-tight text-kiosk-navy">MediKiosk</p><p className="text-xs font-semibold text-foreground/55">AI-assisted pre-consultation</p></div>
+        </div>
+        <div className="flex items-center gap-2"><span className="hidden rounded-xl bg-background/55 px-3 py-2 text-xs font-semibold text-foreground/60 sm:inline">Kiosk 04 · North Wing</span><Button variant="outline" className="min-h-11 gap-2 rounded-xl border-border/70 bg-background/60 text-kiosk-navy" onClick={() => setView("doctorLogin")}><Stethoscope size={17} /> Doctor</Button></div>
+      </header>
+
+      <main className="mx-auto max-w-[1400px] px-5 pb-10 sm:px-10">
+        {view === "welcome" && <Welcome language={language} setLanguage={setLanguage} onStart={() => setView("consent")} />}
+        {view === "consent" && <Consent consent={consent} setConsent={setConsent} onBack={patientBack} onContinue={() => setView("details")} />}
+        {view === "details" && <PatientDetails details={details} setDetails={setDetails} onBack={patientBack} onContinue={() => setView("interview")} />}
+        {view === "interview" && <Interview details={details} currentQuestion={currentQuestion} questionIndex={questionIndex} answers={answers} setAnswer={(answer) => setAnswers((a) => ({ ...a, [questionIndex]: answer }))} speechState={speechState} transcription={transcription} startSpeech={startSpeech} hasRedFlag={hasRedFlag} onBack={patientBack} onNext={() => questionIndex < questions.length - 1 ? setQuestionIndex((i) => i + 1) : setView("documents")} />}
+        {view === "documents" && <Documents documents={documents} setDocuments={setDocuments} processing={processing} processDocuments={processDocuments} onBack={patientBack} />}
+        {view === "extracted" && <Extracted extracted={extracted} onBack={patientBack} onContinue={() => setView("review")} />}
+        {view === "review" && <Review details={details} transcription={transcription} documents={documents} extracted={extracted} onBack={patientBack} onSubmit={() => setView("success")} />}
+        {view === "success" && <Success name={details.name || "Patient"} onSummary={() => setView("review")} onDoctor={() => setView("doctorLogin")} />}
+      </main>
     </div>
   );
 }
+
+function StepHeader({ eyebrow, title, subtitle, step }: { eyebrow: string; title: string; subtitle?: string; step: string }) {
+  return <div className="mb-7 flex items-start justify-between gap-4"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-kiosk-coral">{eyebrow}</p><h1 className="text-3xl font-extrabold leading-tight tracking-tight text-kiosk-navy sm:text-5xl">{title}</h1>{subtitle && <p className="mt-3 max-w-xl text-base font-medium leading-relaxed text-foreground/60 sm:text-lg">{subtitle}</p>}</div><span className="shrink-0 rounded-2xl bg-background/75 px-3 py-2 text-sm font-bold text-foreground/45">{step}</span></div>;
+}
+
+function KioskFrame({ children, onBack, onContinue, continueLabel = "Continue", disabled = false }: { children: React.ReactNode; onBack?: () => void; onContinue?: () => void; continueLabel?: string; disabled?: boolean }) {
+  return <div className="mk-rise mx-auto max-w-4xl rounded-[28px] border border-background/80 bg-background/75 p-6 shadow-[0_20px_70px_-30px_color-mix(in_oklab,var(--kiosk-navy)_45%,transparent)] backdrop-blur-xl sm:p-10">{children}{(onBack || onContinue) && <div className="mt-9 flex items-center justify-between gap-3 border-t border-border/60 pt-6">{onBack ? <Button variant="outline" onClick={onBack} className="min-h-14 rounded-2xl border-border bg-background/60 px-6 text-base font-bold text-kiosk-navy"><ArrowLeft size={20} /> Back</Button> : <span />}{onContinue && <Button onClick={onContinue} disabled={disabled} className="min-h-14 rounded-2xl bg-kiosk-navy px-7 text-base font-bold text-primary-foreground shadow-lg hover:bg-kiosk-navy/90">{continueLabel}<ArrowRight size={20} /></Button>}</div>}</div>;
+}
+
+function Welcome({ language, setLanguage, onStart }: { language: string; setLanguage: (s: string) => void; onStart: () => void }) {
+  return <div className="grid min-h-[calc(100vh-110px)] items-center gap-8 lg:grid-cols-[1.05fr_.95fr]"><div className="mk-rise max-w-2xl"><div className="mb-8 inline-flex items-center gap-2 rounded-full bg-kiosk-green/15 px-4 py-2 text-sm font-bold text-kiosk-green"><BadgeCheck size={18} /> Safe, simple, patient-first</div><h1 className="text-6xl font-extrabold leading-[.98] tracking-tight text-kiosk-navy sm:text-8xl">Let’s prepare<br /><span className="text-kiosk-coral">your visit.</span></h1><p className="mt-7 max-w-lg text-xl font-medium leading-relaxed text-foreground/65 sm:text-2xl">Share a few details before you meet your doctor.</p><div className="mt-10 flex flex-wrap gap-3">{["English", "हिन्दी", "ગુજરાતી"].map((item) => <Button key={item} variant={language === item ? "default" : "outline"} onClick={() => setLanguage(item)} className={`min-h-14 rounded-2xl px-6 text-lg font-bold ${language === item ? "bg-kiosk-teal text-primary-foreground hover:bg-kiosk-teal/90" : "border-border bg-background/60 text-kiosk-navy"}`}>{item}</Button>)}</div><Button onClick={onStart} className="mt-7 min-h-20 rounded-2xl bg-kiosk-coral px-10 text-2xl font-extrabold text-primary-foreground shadow-xl hover:bg-kiosk-coral/90">Start <ChevronRight size={28} /></Button></div><div className="hidden min-h-[420px] items-center justify-center rounded-[34px] border border-background/80 bg-background/45 p-10 lg:flex"><div className="max-w-sm text-center"><div className="mx-auto mb-7 grid size-32 place-items-center rounded-[36px] bg-kiosk-teal/15 text-kiosk-teal"><HeartPulse size={76} strokeWidth={1.5} /></div><p className="text-2xl font-extrabold text-kiosk-navy">One step at a time</p><p className="mt-3 text-base font-medium leading-relaxed text-foreground/55">You can tap, speak, or ask a staff member for help.</p></div></div></div>;
+}
+
+function Consent({ consent, setConsent, onBack, onContinue }: { consent: boolean; setConsent: (b: boolean) => void; onBack: () => void; onContinue: () => void }) {
+  return <KioskFrame onBack={onBack} onContinue={onContinue} disabled={!consent}><StepHeader eyebrow="Step 2 · Your privacy" title="Can we collect your health details?" subtitle="We will use your answers and previous records to prepare your consultation history." step="2 / 8" /><div className="grid gap-4 sm:grid-cols-3"><div className="rounded-2xl bg-kiosk-sky/15 p-5"><Volume2 className="mb-4 text-kiosk-sky" size={30} /><p className="text-lg font-extrabold text-kiosk-navy">Listen</p><Button variant="outline" className="mt-4 min-h-12 rounded-xl border-kiosk-sky/30 bg-background/60 font-bold text-kiosk-navy"><Volume2 size={18} /> Hear this</Button></div><div className="rounded-2xl bg-kiosk-teal/15 p-5 sm:col-span-2"><ShieldCheck className="mb-4 text-kiosk-teal" size={30} /><p className="text-lg font-extrabold text-kiosk-navy">Your choice</p><p className="mt-2 text-base font-medium leading-relaxed text-foreground/60">Your information helps your doctor prepare. A staff member can help you at any time.</p><label className="mt-5 flex min-h-14 cursor-pointer items-center gap-3 rounded-xl bg-background/65 p-3 text-base font-bold text-kiosk-navy"><Checkbox checked={consent} onCheckedChange={(value) => setConsent(value === true)} className="size-6" /> I agree to continue</label></div></div><div className="mt-6 flex items-center gap-2 rounded-xl bg-kiosk-yellow/25 px-4 py-3 text-sm font-bold text-kiosk-navy"><AlertTriangle size={19} /> This prototype does not provide medical diagnosis.</div></KioskFrame>;
+}
+
+function PatientDetails({ details, setDetails, onBack, onContinue }: { details: typeof initialDetails; setDetails: React.Dispatch<React.SetStateAction<typeof initialDetails>>; onBack: () => void; onContinue: () => void }) {
+  return <KioskFrame onBack={onBack} onContinue={onContinue} disabled={!details.name || !details.age || !details.gender}><StepHeader eyebrow="Step 3 · About you" title="Tell us about yourself" subtitle="Use the boxes below. You can ask for help." step="3 / 8" /><div className="grid gap-5 sm:grid-cols-2"><label className="text-base font-extrabold text-kiosk-navy">Your name<Input value={details.name} onChange={(e) => setDetails((d) => ({ ...d, name: e.target.value }))} placeholder="Type your name" className="mt-2 min-h-14 rounded-2xl bg-background text-lg" /></label><label className="text-base font-extrabold text-kiosk-navy">Your age<Input inputMode="numeric" value={details.age} onChange={(e) => setDetails((d) => ({ ...d, age: e.target.value }))} placeholder="Example: 52" className="mt-2 min-h-14 rounded-2xl bg-background text-lg" /></label><div><p className="text-base font-extrabold text-kiosk-navy">I am</p><div className="mt-2 grid grid-cols-3 gap-2">{["Male", "Female", "Other"].map((item) => <Button key={item} variant={details.gender === item ? "default" : "outline"} onClick={() => setDetails((d) => ({ ...d, gender: item }))} className={`min-h-14 rounded-2xl text-base font-bold ${details.gender === item ? "bg-kiosk-teal text-primary-foreground hover:bg-kiosk-teal/90" : "bg-background text-kiosk-navy"}`}>{item}</Button>)}</div></div><div><p className="text-base font-extrabold text-kiosk-navy">Main problem</p><div className="mt-2 grid grid-cols-2 gap-2">{Object.keys(interviewQuestions).map((item) => { const Icon = iconMap[item]; return <Button key={item} variant={details.complaint === item ? "default" : "outline"} onClick={() => setDetails((d) => ({ ...d, complaint: item as Complaint }))} className={`min-h-14 justify-start rounded-2xl px-3 text-sm font-bold ${details.complaint === item ? "bg-kiosk-coral text-primary-foreground hover:bg-kiosk-coral/90" : "bg-background text-kiosk-navy"}`}><Icon size={19} />{item}</Button>; })}</div></div></div></KioskFrame>;
+}
+
+const initialDetails = { name: "", age: "", gender: "", complaint: "Abdominal pain" as Complaint };
+
+function Interview({ details, currentQuestion, questionIndex, answers, setAnswer, speechState, transcription, startSpeech, hasRedFlag, onBack, onNext }: { details: typeof initialDetails; currentQuestion: { question: string; choices?: string[] }; questionIndex: number; answers: Record<number, string>; setAnswer: (answer: string) => void; speechState: SpeechState; transcription: string; startSpeech: () => void; hasRedFlag: boolean; onBack: () => void; onNext: () => void }) {
+  const total = interviewQuestions[details.complaint].length;
+  return <KioskFrame onBack={onBack} onContinue={onNext} continueLabel={questionIndex === total - 1 ? "Next: records" : "Next question"}><StepHeader eyebrow="Step 4 · Tell us" title={currentQuestion.question} subtitle="Tap one answer, or speak your answer." step={`${questionIndex + 1} / ${total}`} /><div className="mb-7 h-3 overflow-hidden rounded-full bg-foreground/10"><div className="h-full rounded-full bg-kiosk-teal transition-all duration-500" style={{ width: `${((questionIndex + 1) / total) * 100}%` }} /></div>{currentQuestion.choices && <div className="grid gap-3 sm:grid-cols-2">{currentQuestion.choices.map((choice) => <Button key={choice} variant={answers[questionIndex] === choice ? "default" : "outline"} onClick={() => setAnswer(choice)} className={`min-h-16 justify-start rounded-2xl px-5 text-left text-lg font-bold ${answers[questionIndex] === choice ? "bg-kiosk-teal text-primary-foreground hover:bg-kiosk-teal/90" : "bg-background text-kiosk-navy"}`}>{answers[questionIndex] === choice ? <Check size={22} /> : <span className="size-5 rounded-full border-2 border-current" />}{choice}</Button>)}</div>}<div className="mt-7 flex flex-col items-center gap-4 rounded-3xl bg-kiosk-sky/12 p-5 sm:flex-row"><Button onClick={startSpeech} disabled={speechState === "listening" || speechState === "processing"} className={`mk-mic size-20 shrink-0 rounded-full bg-kiosk-coral text-primary-foreground shadow-lg hover:bg-kiosk-coral/90 ${speechState === "listening" ? "ring-8 ring-kiosk-coral/20" : ""}`} aria-label="Speak"><Mic size={32} /></Button><div className="text-center sm:text-left"><p className="text-lg font-extrabold text-kiosk-navy">{speechState === "idle" ? "Speak" : speechState === "listening" ? "Listening…" : speechState === "processing" ? "Understanding…" : "Got it"}</p><p className="text-sm font-medium text-foreground/55">{transcription ? `Transcription: ${transcription}` : "Tap the microphone and say your answer"}</p><p className="mt-1 text-xs font-bold text-kiosk-teal">{speechState === "idle" ? "Voice help is optional" : "Demo voice mode"}</p></div></div>{hasRedFlag && <div className="mt-5 flex items-start gap-3 rounded-2xl border-2 border-kiosk-coral/30 bg-kiosk-coral/10 p-4 text-kiosk-navy"><AlertTriangle className="mt-0.5 shrink-0 text-kiosk-coral" size={26} /><div><p className="text-base font-extrabold">Potential red flag detected.</p><p className="mt-1 text-sm font-medium">Please alert medical staff. This is not a diagnosis.</p></div></div>}</KioskFrame>;
+}
+
+function Documents({ documents, setDocuments, processing, processDocuments, onBack }: { documents: string[]; setDocuments: React.Dispatch<React.SetStateAction<string[]>>; processing: boolean; processDocuments: () => void; onBack: () => void }) {
+  const addDocument = (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (file) setDocuments((items) => [...items, file.name]); };
+  return <KioskFrame onBack={onBack} onContinue={processDocuments} continueLabel={processing ? "Processing…" : "Process documents"} disabled={processing}><StepHeader eyebrow="Step 5 · Previous records" title="Do you have old medical papers?" subtitle="You can upload a prescription, lab report, or discharge summary." step="5 / 8" /><label className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-kiosk-teal/45 bg-kiosk-teal/10 text-center"><Upload className="mb-2 text-kiosk-teal" size={30} /><span className="text-lg font-extrabold text-kiosk-navy">Tap to add a document</span><span className="mt-1 text-sm font-medium text-foreground/55">PDF · JPG · PNG</span><input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={addDocument} /></label><div className="mt-6 grid gap-3 sm:grid-cols-2">{documents.map((doc, index) => <div key={`${doc}-${index}`} className="flex min-h-16 items-center gap-3 rounded-2xl bg-background px-4 shadow-sm"><span className="grid size-10 place-items-center rounded-xl bg-kiosk-green/15 text-kiosk-green">{doc.endsWith(".pdf") ? <FileText size={21} /> : <FileImage size={21} />}</span><span className="flex-1 text-sm font-extrabold text-kiosk-navy">{doc}</span><BadgeCheck className="text-kiosk-green" size={21} /><button aria-label={`Remove ${doc}`} className="text-foreground/35 hover:text-kiosk-coral" onClick={() => setDocuments((items) => items.filter((_, itemIndex) => itemIndex !== index))}><X size={18} /></button></div>)}</div>{processing && <div className="mt-6 rounded-2xl bg-kiosk-sky/12 p-5"><div className="flex items-center gap-3 text-base font-bold text-kiosk-navy"><RefreshCw className="mk-spin text-kiosk-sky" size={21} /> Uploading → Extracting text → Identifying information</div><div className="mt-4 h-3 rounded-full bg-foreground/10"><div className="h-full w-2/3 rounded-full bg-kiosk-sky" /></div></div>}</KioskFrame>;
+}
+
+function Extracted({ extracted, onBack, onContinue }: { extracted: ExtractedInformation | null; onBack: () => void; onContinue: () => void }) {
+  return <KioskFrame onBack={onBack} onContinue={onContinue} continueLabel="Review my case"><StepHeader eyebrow="Step 6 · Check the draft" title="We found these details" subtitle="Please check the information. You can edit it before sending to your doctor." step="6 / 8" /><div className="mb-6 flex items-center gap-2 rounded-xl bg-kiosk-yellow/25 px-4 py-3 text-sm font-extrabold text-kiosk-navy"><CircleHelp size={19} /> Demo data · Please check every detail</div><div className="grid gap-4 sm:grid-cols-3"><InfoCard icon={<Activity />} title="Past conditions" value={extracted?.conditions.join(", ") || "No details found"} /><InfoCard icon={<PillIcon />} title="Medicines listed" value={extracted?.medications.join(", ") || "No details found"} /><InfoCard icon={<AlertTriangle />} title="Lab result" value={extracted?.labResults[0] ? `${extracted.labResults[0].name} — ${extracted.labResults[0].value}` : "No details found"} tone="warning" /></div><p className="mt-6 text-sm font-bold text-foreground/55">These are simulated extracted details for this prototype. They are not medical advice.</p></KioskFrame>;
+}
+
+function PillIcon() { return <span className="text-2xl">◒</span>; }
+function InfoCard({ icon, title, value, tone = "teal" }: { icon: React.ReactNode; title: string; value: string; tone?: "teal" | "warning" }) { return <div className={`rounded-2xl p-5 ${tone === "warning" ? "bg-kiosk-yellow/25" : "bg-kiosk-teal/12"}`}><div className="mb-4 text-kiosk-teal">{icon}</div><p className="text-sm font-bold text-foreground/55">{title}</p><p className="mt-2 text-lg font-extrabold text-kiosk-navy">{value}</p><Button variant="ghost" className="mt-3 min-h-10 rounded-xl px-0 font-bold text-kiosk-coral"><Pencil size={16} /> Edit</Button></div>; }
+
+function Review({ details, transcription, documents, extracted, onBack, onSubmit }: { details: typeof initialDetails; transcription: string; documents: string[]; extracted: ExtractedInformation | null; onBack: () => void; onSubmit: () => void }) {
+  const rows = useMemo(() => [{ title: "Chief complaint", text: details.complaint, source: "Patient answer" }, { title: "History of present illness", text: transcription || "Patient details recorded during interview.", source: "🎤 Patient interview" }, { title: "Past medical history", text: extracted?.conditions.join(", ") || "Not entered", source: "📄 Uploaded document" }, { title: "Medications", text: extracted?.medications.join(", ") || "Not entered", source: "📄 Uploaded document" }, { title: "Allergies", text: "Not entered", source: "Patient review" }, { title: "Previous investigations", text: extracted?.labResults.map((item) => `${item.name} — ${item.value} (${item.status})`).join(", ") || "Not entered", source: "📄 Uploaded document" }], [details, transcription, extracted]);
+  return <KioskFrame onBack={onBack} onContinue={onSubmit} continueLabel="Confirm & send to doctor"><StepHeader eyebrow="Step 7 · Final check" title="Is everything correct?" subtitle="Review your information. Your doctor will verify it before care." step="7 / 8" /><div className="grid gap-3 sm:grid-cols-2">{rows.map((row) => <div key={row.title} className="rounded-2xl bg-background p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-foreground/55">{row.title}</p><p className="mt-1 text-lg font-extrabold text-kiosk-navy">{row.text}</p></div><Button size="icon" variant="ghost" className="shrink-0 text-kiosk-coral" aria-label={`Edit ${row.title}`}><Pencil size={18} /></Button></div><p className="mt-3 text-xs font-bold text-kiosk-teal">{row.source}</p></div>)}</div><div className="mt-6 flex items-start gap-3 rounded-2xl bg-kiosk-yellow/25 p-4 text-sm font-bold text-kiosk-navy"><ShieldCheck size={20} className="mt-0.5 shrink-0" /> No diagnosis or treatment advice is provided by this prototype.</div><p className="mt-4 text-sm font-bold text-foreground/50">Documents: {documents.join(" · ") || "None uploaded"}</p></KioskFrame>;
+}
+
+function Success({ name, onSummary, onDoctor }: { name: string; onSummary: () => void; onDoctor: () => void }) { return <div className="grid min-h-[calc(100vh-150px)] place-items-center"><div className="mk-rise max-w-xl text-center"><div className="mx-auto grid size-28 place-items-center rounded-full bg-kiosk-green/15 text-kiosk-green"><Check size={64} strokeWidth={3} /></div><p className="mt-7 text-xs font-extrabold uppercase tracking-[0.2em] text-kiosk-green">Ready for physician review</p><h1 className="mt-3 text-4xl font-extrabold tracking-tight text-kiosk-navy sm:text-6xl">Your history is ready.</h1><p className="mt-4 text-lg font-medium leading-relaxed text-foreground/60">{name}, your doctor can now review your information before consultation.</p><div className="mx-auto mt-8 max-w-sm rounded-3xl bg-background/75 p-6"><p className="text-sm font-bold text-foreground/50">Your token number</p><p className="mt-1 text-5xl font-extrabold text-kiosk-coral">A-105</p></div><div className="mt-8 flex flex-wrap justify-center gap-3"><Button variant="outline" onClick={onSummary} className="min-h-14 rounded-2xl border-border bg-background/70 px-6 text-base font-bold text-kiosk-navy"><ClipboardList size={20} /> View summary</Button><Button onClick={onDoctor} className="min-h-14 rounded-2xl bg-kiosk-navy px-6 text-base font-bold text-primary-foreground">Doctor view <Stethoscope size={20} /></Button></div></div></div>; }
+
+function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selectedCase }: { view: View; setView: (view: View) => void; selectedPatient: string; setSelectedPatient: (token: string) => void; selectedCase: typeof demoConsultation }) {
+  if (view === "doctorLogin") return <div className="min-h-screen bg-[linear-gradient(135deg,var(--kiosk-cream),color-mix(in_oklab,var(--kiosk-sky)_14%,var(--background)))] p-5 sm:p-10"><div className="mx-auto flex min-h-[80vh] max-w-md items-center"><div className="w-full rounded-[28px] bg-background/80 p-8 shadow-xl backdrop-blur-xl sm:p-10"><div className="mb-7 flex items-center gap-3"><div className="grid size-12 place-items-center rounded-2xl bg-kiosk-navy text-primary-foreground"><Stethoscope size={25} /></div><div><p className="text-2xl font-extrabold text-kiosk-navy">Doctor sign in</p><p className="text-xs font-bold text-foreground/50">MediKiosk · demo mode</p></div></div><p className="text-base font-medium leading-relaxed text-foreground/60">Use the demo account to view fictional patient cases.</p><div className="mt-6 space-y-3 rounded-2xl bg-kiosk-sky/12 p-4 text-sm font-bold text-kiosk-navy"><p>Email: doctor@medikiosk.demo</p><p>Password: demo123</p></div><Button onClick={() => setView("dashboard")} className="mt-6 min-h-14 w-full rounded-2xl bg-kiosk-navy text-base font-bold text-primary-foreground"><LogIn size={20} /> Enter dashboard</Button><Button variant="ghost" onClick={() => setView("welcome")} className="mt-2 min-h-12 w-full font-bold text-kiosk-navy"><ArrowLeft size={18} /> Back to patient kiosk</Button></div></div></div>;
+  return <div className="min-h-screen bg-[linear-gradient(135deg,color-mix(in_oklab,var(--kiosk-sky)_10%,var(--background)),var(--kiosk-cream))] text-foreground"><div className="flex min-h-screen"><aside className="hidden w-64 shrink-0 border-r border-border/70 bg-kiosk-navy p-5 text-primary-foreground lg:block"><div className="flex items-center gap-3 border-b border-primary-foreground/15 pb-7"><div className="grid size-10 place-items-center rounded-xl bg-kiosk-coral"><Plus size={23} strokeWidth={3} /></div><div><p className="text-lg font-extrabold">MediKiosk</p><p className="text-[11px] font-bold text-primary-foreground/55">Physician desk</p></div></div><nav className="mt-8 space-y-2">{[["Dashboard", BarChart3], ["Patient queue", Users], ["Today's cases", ClipboardList], ["Settings", Settings]].map(([label, Icon]) => <button key={label as string} className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold ${label === "Patient queue" ? "bg-primary-foreground/10 text-kiosk-yellow" : "text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground"}`} onClick={() => setView("dashboard")}><Icon size={19} />{label as string}</button>)}</nav><div className="mt-auto hidden rounded-2xl bg-primary-foreground/10 p-4 text-xs font-medium leading-relaxed text-primary-foreground/60 xl:block">Demo data only.<br />Verify all information with the patient.</div></aside><div className="min-w-0 flex-1"><header className="flex min-h-20 items-center justify-between border-b border-border/70 bg-background/70 px-5 sm:px-8"><div className="flex items-center gap-3"><Button size="icon" variant="ghost" className="lg:hidden" aria-label="Open menu"><Menu /></Button><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-kiosk-coral">Physician workspace</p><h1 className="text-2xl font-extrabold text-kiosk-navy">{view === "case" ? "Patient case" : "Patients ready for consultation"}</h1></div></div><div className="flex items-center gap-3"><span className="hidden text-sm font-bold text-foreground/50 sm:inline">Dr. M. Rao</span><div className="grid size-10 place-items-center rounded-full bg-kiosk-teal/15 font-extrabold text-kiosk-teal">MR</div></div></header><main className="p-5 sm:p-8">{view === "dashboard" ? <DoctorDashboard selectedPatient={selectedPatient} setSelectedPatient={setSelectedPatient} setView={setView} /> : <CaseView selectedCase={selectedCase} onBack={() => setView("dashboard")} />}</main></div></div></div>;
+}
+
+function DoctorDashboard({ selectedPatient, setSelectedPatient, setView }: { selectedPatient: string; setSelectedPatient: (token: string) => void; setView: (view: View) => void }) { return <div className="mx-auto max-w-6xl"><div className="grid gap-4 md:grid-cols-3"><Metric icon={<Users />} label="Ready now" value="2" tone="teal" /><Metric icon={<Clock3 />} label="Average wait" value="14 min" tone="sky" /><Metric icon={<Bell />} label="Needs attention" value="1" tone="coral" /></div><div className="mt-8 flex items-center justify-between"><div><p className="text-sm font-bold text-foreground/50">Today · 03 September 2026</p><h2 className="mt-1 text-2xl font-extrabold text-kiosk-navy">Patient queue</h2></div><span className="rounded-xl bg-kiosk-yellow/30 px-3 py-2 text-xs font-extrabold text-kiosk-navy">FICTIONAL DEMO DATA</span></div><div className="mt-5 grid gap-4">{demoPatients.map((patient) => <button key={patient.token} onClick={() => { setSelectedPatient(patient.token); setView("case"); }} className={`mk-rise flex flex-col gap-4 rounded-2xl border bg-background/85 p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center ${selectedPatient === patient.token ? "border-kiosk-teal/50" : "border-border/70"}`}><span className="grid size-12 place-items-center rounded-xl bg-kiosk-coral/12 text-lg font-extrabold text-kiosk-coral">{patient.token.split("-")[1]}</span><span className="min-w-36 flex-1"><span className="block text-lg font-extrabold text-kiosk-navy">{patient.name}</span><span className="block text-sm font-medium text-foreground/50">{patient.age} years · {patient.gender} · submitted {patient.submitted}</span></span><span className="flex-1 text-base font-bold text-foreground/70">{patient.complaint}</span><span className={`rounded-full px-3 py-2 text-xs font-extrabold ${patient.status === "Ready" ? "bg-kiosk-green/15 text-kiosk-green" : "bg-kiosk-yellow/30 text-kiosk-navy"}`}>{patient.status}</span><ChevronRight className="hidden text-foreground/35 sm:block" /></button>)}</div></div>; }
+
+function Metric({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: "teal" | "sky" | "coral" }) { const tones = { teal: "bg-kiosk-teal/12 text-kiosk-teal", sky: "bg-kiosk-sky/15 text-kiosk-sky", coral: "bg-kiosk-coral/12 text-kiosk-coral" }; return <div className="rounded-2xl border border-border/70 bg-background/75 p-5"><div className={`mb-4 grid size-11 place-items-center rounded-xl ${tones[tone]}`}>{icon}</div><p className="text-sm font-bold text-foreground/50">{label}</p><p className="mt-1 text-3xl font-extrabold text-kiosk-navy">{value}</p></div>; }
+
+function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultation; onBack: () => void }) { const [verified, setVerified] = useState(false); return <div className="mx-auto max-w-6xl"><Button variant="ghost" onClick={onBack} className="mb-5 min-h-11 px-0 font-bold text-kiosk-navy"><ArrowLeft size={19} /> Back to queue</Button><div className="flex flex-col justify-between gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-kiosk-coral">Token {selectedCase.token}</p><h2 className="mt-2 text-4xl font-extrabold tracking-tight text-kiosk-navy">{selectedCase.name}</h2><p className="mt-2 text-base font-medium text-foreground/55">{selectedCase.age} years · {selectedCase.gender} · {selectedCase.complaint} · submitted {selectedCase.submitted}</p></div><div className="flex gap-2"><Button variant="outline" className="min-h-12 rounded-xl bg-background font-bold text-kiosk-navy"><Pencil size={18} /> Edit</Button><Button onClick={() => setVerified(true)} className="min-h-12 rounded-xl bg-kiosk-teal font-bold text-primary-foreground hover:bg-kiosk-teal/90"><Save size={18} /> {verified ? "Saved" : "Verify & save"}</Button></div></div>{verified && <div className="mt-5 flex items-center gap-2 rounded-xl bg-kiosk-green/15 px-4 py-3 text-sm font-extrabold text-kiosk-green"><BadgeCheck size={19} /> Case marked verified in this demo.</div>}<div className="mt-6 grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><div className="space-y-5"><Attention items={selectedCase.attention} /><Section title="Chief complaint" icon={<UserRound />} text={selectedCase.complaint} source="🎤 Patient interview" /><Section title="History of present illness" icon={<HeartPulse />} text={selectedCase.history} source="🎤 Patient interview" draft /><div className="grid gap-5 sm:grid-cols-2"><Section title="Past medical history" icon={<ClipboardList />} text="Type 2 Diabetes — listed in uploaded record" source="📄 Uploaded document" /><Section title="Medications" icon={<Activity />} text={selectedCase.medications.join(", ")} source="📄 Uploaded document" /></div><Section title="Allergies" icon={<AlertTriangle />} text={selectedCase.allergies} source="Patient review" /><Section title="Previous investigations" icon={<BarChart3 />} text={selectedCase.investigations.join(", ")} source="📄 Uploaded document" /></div><div className="space-y-5"><div className="rounded-2xl border border-border/70 bg-background/75 p-5"><h3 className="flex items-center gap-2 text-lg font-extrabold text-kiosk-navy"><FileText size={20} className="text-kiosk-coral" /> Medical documents</h3><div className="mt-4 space-y-2">{selectedCase.documents.map((doc) => <div key={doc} className="flex items-center gap-3 rounded-xl bg-kiosk-sky/10 p-3 text-sm font-bold text-kiosk-navy"><Paperclip size={17} className="text-kiosk-sky" />{doc}<BadgeCheck className="ml-auto text-kiosk-green" size={18} /></div>)}</div></div><div className="rounded-2xl border border-border/70 bg-background/75 p-5"><h3 className="flex items-center gap-2 text-lg font-extrabold text-kiosk-navy"><Clock3 size={20} className="text-kiosk-coral" /> Medical timeline</h3><div className="relative mt-5 space-y-5 pl-6 before:absolute before:bottom-2 before:left-[7px] before:top-2 before:w-px before:bg-border">{selectedCase.timeline.map((item) => <div key={`${item.year}-${item.event}`} className="relative"><span className="absolute -left-[23px] top-1.5 size-3 rounded-full bg-kiosk-teal ring-4 ring-background" /><p className="text-xs font-extrabold text-kiosk-coral">{item.year}</p><p className="mt-1 text-sm font-bold text-kiosk-navy">{item.event}</p></div>)}</div></div><div className="rounded-2xl border border-kiosk-sky/25 bg-kiosk-sky/12 p-5"><h3 className="text-lg font-extrabold text-kiosk-navy">AI-generated summary</h3><p className="mt-3 text-sm font-medium leading-relaxed text-foreground/70">Draft only: patient-reported information and uploaded records are ready for physician verification.</p><p className="mt-4 text-xs font-extrabold text-kiosk-coral">AI-generated draft — physician verification required.</p></div></div></div></div>; }
+
+function Attention({ items }: { items: string[] }) { return <div className="rounded-2xl border-2 border-kiosk-coral/25 bg-kiosk-coral/10 p-5"><h3 className="flex items-center gap-2 text-lg font-extrabold text-kiosk-navy"><AlertTriangle size={21} className="text-kiosk-coral" /> Attention</h3>{items.map((item) => <p key={item} className="mt-3 text-base font-bold text-kiosk-navy">{item}</p>)}<p className="mt-2 text-xs font-bold text-foreground/50">Please verify against the original document.</p></div>; }
+function Section({ title, icon, text, source, draft = false }: { title: string; icon: React.ReactNode; text: string; source: string; draft?: boolean }) { return <div className="rounded-2xl border border-border/70 bg-background/75 p-5"><h3 className="flex items-center gap-2 text-lg font-extrabold text-kiosk-navy">{icon}{title}</h3><p className="mt-3 text-base font-medium leading-relaxed text-foreground/70">{text}</p><div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-extrabold text-kiosk-teal"><span>{source}</span>{draft && <span className="rounded-full bg-kiosk-yellow/30 px-2 py-1 text-kiosk-navy">AI-generated draft — physician verification required.</span>}</div></div>; }
