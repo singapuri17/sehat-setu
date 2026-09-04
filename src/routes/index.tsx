@@ -69,7 +69,12 @@ const interviewQuestions: Record<Complaint, { question: string; choices?: string
 
 const iconMap: Record<Complaint, typeof HeartPulse> = { "Abdominal pain": Activity, Fever: Activity, Headache: CircleHelp, Cough: Volume2, "Chest pain": HeartPulse };
 const defaultPatient = demoPatients[0] ?? { token: "A-102", name: "Demo patient", age: "52", gender: "Male", complaint: "Abdominal pain", status: "Ready" as const, submitted: "09:42" };
-const doctorNavItems: Array<{ label: string; Icon: typeof BarChart3 }> = [["Dashboard", BarChart3], ["Patient queue", Users], ["Today's cases", ClipboardList], ["Settings", Settings]].map(([label, Icon]) => ({ label, Icon }));
+const doctorNavItems: Array<{ label: string; Icon: typeof BarChart3 }> = [
+  { label: "Dashboard", Icon: BarChart3 },
+  { label: "Patient queue", Icon: Users },
+  { label: "Today's cases", Icon: ClipboardList },
+  { label: "Settings", Icon: Settings },
+];
 
 function MediKiosk() {
   const [view, setView] = useState<View>("welcome");
