@@ -1,4 +1,4 @@
-- [ ] Build MediKiosk patient-to-doctor prototype with elderly-friendly kiosk UX
-- [ ] Use multi-tone gradient visual direction with simplified labels and large touch controls
-- [ ] Add mock service abstractions for speech, documents, AI, patients, and consultations
-- [ ] Verify patient flow, doctor queue, case review, and responsive rendering
+- [x] Build MediKiosk patient-to-doctor prototype with elderly-friendly kiosk UX
+- [x] Use multi-tone gradient visual direction with simplified labels and large touch controls
+- [x] Add mock service abstractions for speech, documents, AI, patients, and consultations
+- [x] Verify patient flow, doctor queue, case review, and responsive rendering
