@@ -153,7 +153,47 @@ function KioskFrame({ children, onBack, onContinue, continueLabel = "Continue", 
 }
 
 function Welcome({ language, setLanguage, onStart }: { language: string; setLanguage: (s: string) => void; onStart: () => void }) {
-  return <div className="grid min-h-[calc(100vh-110px)] items-center gap-8 lg:grid-cols-[1.05fr_.95fr]"><div className="mk-rise max-w-2xl"><div className="mb-8 inline-flex items-center gap-2 rounded-full bg-kiosk-green/15 px-4 py-2 text-sm font-bold text-kiosk-green"><BadgeCheck size={18} /> Safe, simple, patient-first</div><h1 className="text-6xl font-extrabold leading-[.98] tracking-tight text-kiosk-navy sm:text-8xl">Let’s prepare<br /><span className="text-kiosk-coral">your visit.</span></h1><p className="mt-7 max-w-lg text-xl font-medium leading-relaxed text-foreground/65 sm:text-2xl">Share a few details before you meet your doctor.</p><div className="mt-10 flex flex-wrap gap-3">{["English", "हिन्दी", "ગુજરાતી"].map((item) => <Button key={item} variant={language === item ? "default" : "outline"} onClick={() => setLanguage(item)} className={`min-h-14 rounded-2xl px-6 text-lg font-bold ${language === item ? "bg-kiosk-teal text-primary-foreground hover:bg-kiosk-teal/90" : "border-border bg-background/60 text-kiosk-navy"}`}>{item}</Button>)}</div><Button onClick={onStart} className="mt-7 min-h-20 rounded-2xl bg-kiosk-coral px-10 text-2xl font-extrabold text-primary-foreground shadow-xl hover:bg-kiosk-coral/90">Start <ChevronRight size={28} /></Button></div><div className="hidden min-h-[420px] items-center justify-center rounded-[34px] border border-background/80 bg-background/45 p-10 lg:flex"><div className="max-w-sm text-center"><div className="mx-auto mb-7 grid size-32 place-items-center rounded-[36px] bg-kiosk-teal/15 text-kiosk-teal"><HeartPulse size={76} strokeWidth={1.5} /></div><p className="text-2xl font-extrabold text-kiosk-navy">One step at a time</p><p className="mt-3 text-base font-medium leading-relaxed text-foreground/55">You can tap, speak, or ask a staff member for help.</p></div></div></div>;
+  const languages = ["English", "हिन्दी", "ગુજરાતી"];
+  return (
+    <div className="mk-rise flex min-h-[calc(100vh-110px)] flex-col items-center justify-center px-4 py-10 text-center">
+      <div className="relative mb-9">
+        <div className="grid size-24 place-items-center rounded-[28px] bg-kiosk-coral text-primary-foreground shadow-[0_20px_50px_-15px_color-mix(in_oklab,var(--kiosk-coral)_72%,transparent)]">
+          <Plus size={52} strokeWidth={3} />
+        </div>
+        <span className="absolute -bottom-2 -right-2 grid size-11 place-items-center rounded-2xl bg-background text-kiosk-teal shadow-md ring-1 ring-border/60">
+          <HeartPulse size={22} />
+        </span>
+      </div>
+
+      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-background/80 bg-background/70 px-4 py-2 text-sm font-bold text-kiosk-teal backdrop-blur">
+        <Stethoscope size={16} /> Self-service check-in
+      </div>
+
+      <h1 className="max-w-3xl text-5xl font-extrabold leading-[1.05] tracking-tight text-kiosk-navy sm:text-7xl">
+        Begin your <span className="text-kiosk-coral">check-in</span>
+      </h1>
+      <p className="mt-6 max-w-xl text-xl font-medium leading-relaxed text-foreground/65 sm:text-2xl">
+        Answer a few simple questions so your doctor is ready when you are.
+      </p>
+
+      <div className="mt-12 w-full max-w-md">
+        <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-foreground/45">Choose your language</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {languages.map((item) => (
+            <Button key={item} variant={language === item ? "default" : "outline"} onClick={() => setLanguage(item)} className={`min-h-14 rounded-2xl px-7 text-lg font-bold ${language === item ? "bg-kiosk-teal text-primary-foreground shadow-lg hover:bg-kiosk-teal/90" : "border-border bg-background/70 text-kiosk-navy backdrop-blur"}`}>{item}</Button>
+          ))}
+        </div>
+      </div>
+
+      <Button onClick={onStart} className="mt-10 min-h-[4.5rem] w-full max-w-sm rounded-2xl bg-kiosk-coral text-2xl font-extrabold text-primary-foreground shadow-[0_22px_55px_-15px_color-mix(in_oklab,var(--kiosk-coral)_75%,transparent)] hover:bg-kiosk-coral/90">
+        Start <ChevronRight size={28} />
+      </Button>
+
+      <div className="mt-10 inline-flex items-center gap-2 rounded-xl bg-background/55 px-4 py-2 text-sm font-semibold text-foreground/55 backdrop-blur">
+        <ShieldCheck size={16} className="text-kiosk-green" /> Safe, simple, patient-first · This kiosk does not provide a diagnosis
+      </div>
+    </div>
+  );
 }
 
 function Consent({ consent, setConsent, onBack, onContinue }: { consent: boolean; setConsent: (b: boolean) => void; onBack: () => void; onContinue: () => void }) {
