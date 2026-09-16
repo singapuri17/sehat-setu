@@ -2,10 +2,5 @@
   "buildCommand": "bun run build",
   "outputDirectory": ".output/public",
   "installCommand": "bun install",
-  "framework": null,
-  "functions": {
-    ".output/server/**/*.mjs": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  "framework": null
 }
