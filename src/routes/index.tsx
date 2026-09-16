@@ -308,9 +308,8 @@ function MediKiosk() {
       {/* Main header */}
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="relative grid size-10 place-items-center rounded-xl bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/30">
-            <Plus size={22} strokeWidth={3} />
-            <span className="absolute -bottom-1 -right-1 grid size-4 place-items-center rounded-full bg-kiosk-coral text-[7px] font-black text-white">AI</span>
+          <div className="relative size-10 shrink-0">
+            <img src="/logo.png" alt="MediKiosk logo" className="size-10 rounded-xl object-contain" />
           </div>
           <div>
             <p className="text-lg font-black tracking-tight text-kiosk-navy">MediKiosk</p>
@@ -411,9 +410,7 @@ function Welcome({ t, lang, setLang, onStart }: { t: T; lang: Lang; setLang: (l:
         {/* Logo + name */}
         <div className="flex flex-col items-center text-center">
           <div className="relative mb-4">
-            <div className="grid size-20 place-items-center rounded-[22px] bg-kiosk-teal text-white shadow-xl shadow-kiosk-teal/40">
-              <Plus size={42} strokeWidth={2.5} />
-            </div>
+            <img src="/logo.png" alt="MediKiosk logo" className="size-24 rounded-[22px] object-contain drop-shadow-xl" />
             <span className="absolute -bottom-1 -right-1 grid size-8 place-items-center rounded-xl bg-kiosk-coral text-white shadow-md">
               <HeartPulse size={16} />
             </span>
@@ -1430,9 +1427,7 @@ function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selec
       <div className="flex min-h-screen">
         <aside className="hidden w-60 shrink-0 border-r border-kiosk-teal/20 bg-kiosk-navy text-white lg:flex lg:flex-col p-5">
           <div className="flex items-center gap-3 border-b border-white/10 pb-5">
-            <div className="grid size-9 place-items-center rounded-xl bg-kiosk-teal shadow-lg">
-              <Plus size={20} strokeWidth={3} />
-            </div>
+            <img src="/logo.png" alt="MediKiosk logo" className="size-9 rounded-xl object-contain" />
             <div>
               <p className="text-base font-black">MediKiosk</p>
               <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Physician desk</p>
