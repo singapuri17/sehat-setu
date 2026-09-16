@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { extractDocument, type ExtractedInformation } from "@/lib/documentService";
 import { speechToText, type SpeechState } from "@/lib/speechService";
+import { languageOptions, makeT, type T } from "@/lib/i18n";
 import { demoConsultation } from "@/lib/consultationService";
 import { demoPatients } from "@/lib/patientService";
 
@@ -79,6 +80,7 @@ const doctorNavItems: Array<{ label: string; Icon: typeof BarChart3 }> = [
 function MediKiosk() {
   const [view, setView] = useState<View>("welcome");
   const [language, setLanguage] = useState("English");
+  const t = makeT(language === "हिन्दी" ? "hi" : language === "ગુજરાતી" ? "gu" : "en");
   const [consent, setConsent] = useState(false);
   const [details, setDetails] = useState({ name: "", age: "", gender: "", complaint: "Abdominal pain" as Complaint });
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -125,20 +127,20 @@ function MediKiosk() {
       <header className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-5 sm:px-10">
         <div className="flex items-center gap-3">
           <div className="grid size-12 place-items-center rounded-2xl bg-kiosk-coral text-primary-foreground shadow-sm"><Plus size={28} strokeWidth={3} /></div>
-          <div><p className="text-2xl font-extrabold tracking-tight text-kiosk-navy">MediKiosk</p><p className="text-xs font-semibold text-foreground/55">AI-assisted pre-consultation</p></div>
+          <div><p className="text-2xl font-extrabold tracking-tight text-kiosk-navy">MediKiosk</p><p className="text-xs font-semibold text-foreground/55">{t("AI-assisted pre-consultation")}</p></div>
         </div>
-        <div className="flex items-center gap-2"><span className="hidden rounded-xl bg-background/55 px-3 py-2 text-xs font-semibold text-foreground/60 sm:inline">Kiosk 04 · North Wing</span><Button variant="outline" className="min-h-11 gap-2 rounded-xl border-border/70 bg-background/60 text-kiosk-navy" onClick={() => setView("doctorLogin")}><Stethoscope size={17} /> Doctor</Button></div>
+        <div className="flex items-center gap-2"><span className="hidden rounded-xl bg-background/55 px-3 py-2 text-xs font-semibold text-foreground/60 sm:inline">{t("Kiosk 04 · North Wing")}</span><Button variant="outline" className="min-h-11 gap-2 rounded-xl border-border/70 bg-background/60 text-kiosk-navy" onClick={() => setView("doctorLogin")}><Stethoscope size={17} /> {t("Doctor")}</Button></div>
       </header>
 
       <main className="mx-auto max-w-[1400px] px-5 pb-10 sm:px-10">
-        {view === "welcome" && <Welcome language={language} setLanguage={setLanguage} onStart={() => setView("consent")} />}
-        {view === "consent" && <Consent consent={consent} setConsent={setConsent} onBack={patientBack} onContinue={() => setView("details")} />}
-        {view === "details" && <PatientDetails details={details} setDetails={setDetails} onBack={patientBack} onContinue={() => setView("interview")} />}
-        {view === "interview" && <Interview details={details} currentQuestion={currentQuestion} questionIndex={questionIndex} answers={answers} setAnswer={(answer) => setAnswers((a) => ({ ...a, [questionIndex]: answer }))} speechState={speechState} transcription={transcription} startSpeech={startSpeech} hasRedFlag={hasRedFlag} onBack={patientBack} onNext={() => questionIndex < questions.length - 1 ? setQuestionIndex((i) => i + 1) : setView("documents")} />}
-        {view === "documents" && <Documents documents={documents} setDocuments={setDocuments} processing={processing} processDocuments={processDocuments} onBack={patientBack} />}
-        {view === "extracted" && <Extracted extracted={extracted} onBack={patientBack} onContinue={() => setView("review")} />}
-        {view === "review" && <Review details={details} transcription={transcription} documents={documents} extracted={extracted} onBack={patientBack} onSubmit={() => setView("success")} />}
-        {view === "success" && <Success name={details.name || "Patient"} onSummary={() => setView("review")} onDoctor={() => setView("doctorLogin")} />}
+        {view === "welcome" && <Welcome t={t} language={language} setLanguage={setLanguage} onStart={() => setView("consent")} />}
+        {view === "consent" && <Consent t={t} consent={consent} setConsent={setConsent} onBack={patientBack} onContinue={() => setView("details")} />}
+        {view === "details" && <PatientDetails t={t} details={details} setDetails={setDetails} onBack={patientBack} onContinue={() => setView("interview")} />}
+        {view === "interview" && <Interview t={t} details={details} currentQuestion={currentQuestion} questionIndex={questionIndex} answers={answers} setAnswer={(answer) => setAnswers((a) => ({ ...a, [questionIndex]: answer }))} speechState={speechState} transcription={transcription} startSpeech={startSpeech} hasRedFlag={hasRedFlag} onBack={patientBack} onNext={() => questionIndex < questions.length - 1 ? setQuestionIndex((i) => i + 1) : setView("documents")} />}
+        {view === "documents" && <Documents t={t} documents={documents} setDocuments={setDocuments} processing={processing} processDocuments={processDocuments} onBack={patientBack} />}
+        {view === "extracted" && <Extracted t={t} extracted={extracted} onBack={patientBack} onContinue={() => setView("review")} />}
+        {view === "review" && <Review t={t} details={details} transcription={transcription} documents={documents} extracted={extracted} onBack={patientBack} onSubmit={() => setView("success")} />}
+        {view === "success" && <Success t={t} name={details.name || "Patient"} onSummary={() => setView("review")} onDoctor={() => setView("doctorLogin")} />}
       </main>
     </div>
   );
