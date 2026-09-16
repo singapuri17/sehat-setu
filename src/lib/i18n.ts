@@ -35,6 +35,7 @@ const hi: Dict = {
   "This prototype does not provide medical diagnosis.": "यह प्रोटोटाइप कोई चिकित्सा निदान नहीं देता।",
 
   "Step 3 · About you": "चरण 3 · आपके बारे में",
+  "Step 4 · About you": "चरण 4 · आपके बारे में",
   "Tell us about yourself": "अपने बारे में बताइए",
   "Use the boxes below. You can ask for help.": "नीचे दिए बॉक्स भरें। आप मदद माँग सकते हैं।",
   "Your name": "आपका नाम",
@@ -54,6 +55,7 @@ const hi: Dict = {
   "Chest pain": "छाती में दर्द",
 
   "Step 4 · Tell us": "चरण 4 · हमें बताएं",
+  "Step 5 · Tell us": "चरण 5 · हमें बताएं",
   "Tap one answer, or speak your answer.": "एक उत्तर चुनें, या बोलकर बताएं।",
   "Next question": "अगला सवाल",
   "Next: records": "आगे: रिपोर्ट",
@@ -69,7 +71,25 @@ const hi: Dict = {
   "Please alert medical staff. This is not a diagnosis.":
     "कृपया चिकित्सा कर्मचारी को बताएं। यह निदान नहीं है।",
 
+  // Allergy questions
+  "Do you have any known allergies?": "क्या आपको कोई ज्ञात एलर्जी है?",
+  "No known allergies": "कोई ज्ञात एलर्जी नहीं",
+  "Medicine allergy": "दवाई से एलर्जी",
+  "Food allergy": "खाने से एलर्जी",
+  "Dust / Pollen allergy": "धूल / पराग से एलर्जी",
+  "Are you allergic to any medicines?": "क्या आपको किसी दवाई से एलर्जी है?",
+  "Yes — Penicillin / Antibiotics": "हाँ — पेनिसिलिन / एंटीबायोटिक",
+  "Yes — Painkillers (NSAIDs)": "हाँ — दर्दनिवारक (NSAIDs)",
+  "Yes — Other medicines": "हाँ — अन्य दवाइयाँ",
+
+  // Medical stream
+  "Step 5 · Medical stream": "चरण 5 · चिकित्सा पद्धति",
+  "Select Medical Stream": "चिकित्सा पद्धति चुनें",
+  "Choose clinical evaluation methodology": "नैदानिक मूल्यांकन पद्धति चुनें",
+  "Confirm & Continue": "पक्का करें और जारी रखें",
+
   "Step 5 · Previous records": "चरण 5 · पुराने रिकॉर्ड",
+  "Step 6 · Previous records": "चरण 6 · पुराने रिकॉर्ड",
   "Do you have old medical papers?": "क्या आपके पास पुराने मेडिकल कागज़ हैं?",
   "You can upload a prescription, lab report, or discharge summary.":
     "आप पर्ची, लैब रिपोर्ट या डिस्चार्ज सारांश अपलोड कर सकते हैं।",
@@ -80,6 +100,7 @@ const hi: Dict = {
     "अपलोड → टेक्स्ट निकालना → जानकारी पहचानना",
 
   "Step 6 · Check the draft": "चरण 6 · मसौदा जाँचें",
+  "Step 7 · Check the draft": "चरण 7 · मसौदा जाँचें",
   "We found these details": "हमें ये जानकारी मिली",
   "Please check the information. You can edit it before sending to your doctor.":
     "कृपया जानकारी जाँच लें। डॉक्टर को भेजने से पहले आप इसे बदल सकते हैं।",
@@ -94,10 +115,12 @@ const hi: Dict = {
   "Review my case": "मेरा विवरण देखें",
 
   "Step 7 · Final check": "चरण 7 · अंतिम जाँच",
+  "Step 8 · Final check": "चरण 8 · अंतिम जाँच",
   "Is everything correct?": "क्या सब सही है?",
   "Review your information. Your doctor will verify it before care.":
     "अपनी जानकारी देखें। डॉक्टर इलाज से पहले इसे जाँचेंगे।",
   "Chief complaint": "मुख्य शिकायत",
+  "Medical stream": "चिकित्सा पद्धति",
   "History of present illness": "वर्तमान बीमारी का विवरण",
   "Past medical history": "पुरानी बीमारी का इतिहास",
   Medications: "दवाइयाँ",
@@ -122,6 +145,45 @@ const hi: Dict = {
   "Your token number": "आपका टोकन नंबर",
   "View summary": "सारांश देखें",
   "Doctor view": "डॉक्टर स्क्रीन",
+  "Please wait in the queue": "कृपया कतार में प्रतीक्षा करें",
+  "New Patient — Start Fresh": "नया मरीज़ — फिर से शुरू करें",
+  "Auto-resets in": "स्वतः रीसेट होगा",
+
+  // Mode select
+  "Step 1 · Input mode": "चरण 1 · इनपुट मोड",
+  "How would you like to answer?": "आप कैसे जवाब देना चाहते हैं?",
+  "Touch mode is selected by default": "टच मोड डिफ़ॉल्ट रूप से चुना गया है",
+  "Touch / Display Mode": "टच / डिस्प्ले मोड",
+  "Tap buttons and type answers on screen": "स्क्रीन पर बटन दबाएँ और उत्तर टाइप करें",
+  "Voice Mode": "वॉइस मोड",
+  "Questions are read aloud · Answer by speaking": "सवाल जोर से पढ़े जाएंगे · बोलकर जवाब दें",
+  "Works in Chrome / Edge": "Chrome / Edge में काम करता है",
+  "Questions will be spoken in your selected language. After each question, the mic opens automatically for your answer. Touch buttons are also available as backup.":
+    "सवाल आपकी चुनी भाषा में बोले जाएंगे। हर सवाल के बाद माइक खुद खुलेगा। टच बटन भी उपलब्ध हैं।",
+  "Question is being read aloud. Speak your answer.": "सवाल जोर से पढ़ा जा रहा है। अपना जवाब बोलें।",
+  "Speak now — or tap an answer above": "अभी बोलें — या ऊपर जवाब दबाएँ",
+  "Mic will open automatically after question": "सवाल के बाद माइक खुद खुलेगा",
+
+  // Login screen
+  "Step 3 · Identify yourself": "चरण 3 · अपनी पहचान बताएं",
+  "How would you like to proceed?": "आप कैसे आगे बढ़ना चाहते हैं?",
+  "Login with ABHA ID": "ABHA आईडी से लॉगिन करें",
+  "Use your Ayushman Bharat Health Account": "अपना आयुष्मान भारत हेल्थ अकाउंट उपयोग करें",
+  "Login with Mobile OTP": "मोबाइल OTP से लॉगिन करें",
+  "Enter your phone number to receive OTP": "OTP पाने के लिए अपना फोन नंबर डालें",
+  "Continue as Guest": "अतिथि के रूप में जारी रखें",
+  "No account needed · Records not saved": "कोई खाता नहीं चाहिए · रिकॉर्ड सहेजा नहीं जाएगा",
+  "Step 3 · ABHA Login": "चरण 3 · ABHA लॉगिन",
+  "Enter your ABHA ID": "अपनी ABHA आईडी दर्ज करें",
+  "Your 14-digit health account number or @abdm address": "आपका 14-अंकीय स्वास्थ्य खाता नंबर या @abdm पता",
+  "ABHA ID / Address": "ABHA आईडी / पता",
+  "Verify & Continue": "सत्यापित करें और जारी रखें",
+  "Step 3 · Mobile Login": "चरण 3 · मोबाइल लॉगिन",
+  "Enter your mobile number": "अपना मोबाइल नंबर दर्ज करें",
+  "Mobile Number": "मोबाइल नंबर",
+  "Send OTP": "OTP भेजें",
+  "Step 3 · Guest Mode": "चरण 3 · अतिथि मोड",
+  "Continuing without account": "बिना खाते के जारी",
 
   Back: "पीछे",
   Continue: "आगे बढ़ें",
@@ -154,6 +216,7 @@ const gu: Dict = {
   "This prototype does not provide medical diagnosis.": "આ પ્રોટોટાઇપ કોઈ તબીબી નિદાન આપતું નથી.",
 
   "Step 3 · About you": "પગલું 3 · તમારા વિશે",
+  "Step 4 · About you": "પગલું 4 · તમારા વિશે",
   "Tell us about yourself": "તમારા વિશે જણાવો",
   "Use the boxes below. You can ask for help.": "નીચેના બોક્સ ભરો. તમે મદદ માંગી શકો છો.",
   "Your name": "તમારું નામ",
@@ -173,6 +236,7 @@ const gu: Dict = {
   "Chest pain": "છાતીમાં દુખાવો",
 
   "Step 4 · Tell us": "પગલું 4 · અમને જણાવો",
+  "Step 5 · Tell us": "પગલું 5 · અમને જણાવો",
   "Tap one answer, or speak your answer.": "એક જવાબ પસંદ કરો, અથવા બોલીને જણાવો.",
   "Next question": "આગળનો પ્રશ્ન",
   "Next: records": "આગળ: રિપોર્ટ",
@@ -188,7 +252,25 @@ const gu: Dict = {
   "Please alert medical staff. This is not a diagnosis.":
     "કૃપા કરીને તબીબી સ્ટાફને જાણ કરો. આ નિદાન નથી.",
 
+  // Allergy questions
+  "Do you have any known allergies?": "શું તમને કોઈ જાણીતી એલર્જી છે?",
+  "No known allergies": "કોઈ જાણીતી એલર્જી નથી",
+  "Medicine allergy": "દવાથી એલર્જી",
+  "Food allergy": "ખોરાકથી એલર્જી",
+  "Dust / Pollen allergy": "ધૂળ / પરાગથી એલર્જી",
+  "Are you allergic to any medicines?": "શું તમને કોઈ દવાથી એલર્જી છે?",
+  "Yes — Penicillin / Antibiotics": "હા — પેનિસિલિન / એન્ટિબાયોટિક",
+  "Yes — Painkillers (NSAIDs)": "હા — દર્દ-નિવારક (NSAIDs)",
+  "Yes — Other medicines": "હા — અન્ય દવાઓ",
+
+  // Medical stream
+  "Step 5 · Medical stream": "પગલું 5 · તબીબી પ્રવાહ",
+  "Select Medical Stream": "તબીબી પ્રવાહ પસંદ કરો",
+  "Choose clinical evaluation methodology": "ક્લિનિકલ મૂલ્યાંકન પદ્ધતિ પસંદ કરો",
+  "Confirm & Continue": "પક્કું કરો અને આગળ વધો",
+
   "Step 5 · Previous records": "પગલું 5 · જૂના રેકોર્ડ",
+  "Step 6 · Previous records": "પગલું 6 · જૂના રેકોર્ડ",
   "Do you have old medical papers?": "શું તમારી પાસે જૂના મેડિકલ કાગળ છે?",
   "You can upload a prescription, lab report, or discharge summary.":
     "તમે પ્રિસ્ક્રિપ્શન, લેબ રિપોર્ટ કે ડિસ્ચાર્જ સારાંશ અપલોડ કરી શકો છો.",
@@ -199,6 +281,7 @@ const gu: Dict = {
     "અપલોડ → લખાણ કાઢવું → માહિતી ઓળખવી",
 
   "Step 6 · Check the draft": "પગલું 6 · ડ્રાફ્ટ તપાસો",
+  "Step 7 · Check the draft": "પગલું 7 · ડ્રાફ્ટ તપાસો",
   "We found these details": "અમને આ માહિતી મળી",
   "Please check the information. You can edit it before sending to your doctor.":
     "કૃપા કરીને માહિતી તપાસો. ડૉક્ટરને મોકલતા પહેલાં તમે તેને બદલી શકો છો.",
@@ -213,10 +296,12 @@ const gu: Dict = {
   "Review my case": "મારી વિગત જુઓ",
 
   "Step 7 · Final check": "પગલું 7 · અંતિમ તપાસ",
+  "Step 8 · Final check": "પગલું 8 · અંતિમ તપાસ",
   "Is everything correct?": "શું બધું સાચું છે?",
   "Review your information. Your doctor will verify it before care.":
     "તમારી માહિતી તપાસો. ડૉક્ટર સારવાર પહેલાં તેની ખાતરી કરશે.",
   "Chief complaint": "મુખ્ય ફરિયાદ",
+  "Medical stream": "તબીબી પ્રવાહ",
   "History of present illness": "હાલની બીમારીની વિગત",
   "Past medical history": "જૂની બીમારીનો ઇતિહાસ",
   Medications: "દવાઓ",
@@ -241,6 +326,44 @@ const gu: Dict = {
   "Your token number": "તમારો ટોકન નંબર",
   "View summary": "સારાંશ જુઓ",
   "Doctor view": "ડૉક્ટર સ્ક્રીન",
+  "New Patient — Start Fresh": "નવો દર્દી — ફરીથી શરૂ કરો",
+  "Auto-resets in": "સ્વ-રીસેટ",
+
+  // Mode select
+  "Step 1 · Input mode": "પગલું 1 · ઇનપુટ મોડ",
+  "How would you like to answer?": "તમે કેવી રીતે જવાબ આપવા માંગો છો?",
+  "Touch mode is selected by default": "ટચ મોડ ડિફૉલ્ટ રૂપે પસંદ છે",
+  "Touch / Display Mode": "ટચ / ડિસ્પ્લે મોડ",
+  "Tap buttons and type answers on screen": "સ્ક્રીન પર બટન દબાવો અને જવાબ ટાઇપ કરો",
+  "Voice Mode": "વૉઇસ મોડ",
+  "Questions are read aloud · Answer by speaking": "સવાલ મોટેથી વાંચવામાં આવશે · બોલીને જવાબ આપો",
+  "Works in Chrome / Edge": "Chrome / Edge માં કામ કરે છે",
+  "Questions will be spoken in your selected language. After each question, the mic opens automatically for your answer. Touch buttons are also available as backup.":
+    "સવાલ તમારી ભાષામાં બોલવામાં આવશે. દરેક સવાલ પછી માઇક આપોઆપ ખૂલશે. ટચ બટન પણ ઉપલબ્ધ છે.",
+  "Question is being read aloud. Speak your answer.": "સવાલ મોટેથી વાંચવામાં આવી રહ્યો છે. તમારો જવાબ બોલો.",
+  "Speak now — or tap an answer above": "હવે બોલો — અથવા ઉપર જવાબ દબાવો",
+  "Mic will open automatically after question": "સવાલ પછી માઇક આપોઆપ ખૂલશે",
+
+  // Login screen
+  "Step 3 · Identify yourself": "પગલું 3 · તમારી ઓળખ આપો",
+  "How would you like to proceed?": "તમે કેવી રીતે આગળ વધવા માંગો છો?",
+  "Login with ABHA ID": "ABHA ID થી લૉગિન કરો",
+  "Use your Ayushman Bharat Health Account": "તમારો આયુષ્માન ભારત હેલ્થ અકાઉન્ટ ઉપયોગ કરો",
+  "Login with Mobile OTP": "મોબાઇલ OTP થી લૉગિન કરો",
+  "Enter your phone number to receive OTP": "OTP મેળવવા ફોન નંબર દાખલ કરો",
+  "Continue as Guest": "અતિથિ તરીકે ચાલુ રાખો",
+  "No account needed · Records not saved": "કોઈ ખાતું જરૂરી નથી · રેકોર્ડ સહેજ નહીં",
+  "Step 3 · ABHA Login": "પગલું 3 · ABHA લૉગિન",
+  "Enter your ABHA ID": "તમારી ABHA ID દાખલ કરો",
+  "Your 14-digit health account number or @abdm address": "14 અંકનો સ્વાસ્થ્ય ખાતા નંબર અથવા @abdm સરનામું",
+  "ABHA ID / Address": "ABHA ID / સરનામું",
+  "Verify & Continue": "ચકાસો અને આગળ વધો",
+  "Step 3 · Mobile Login": "પગલું 3 · મોબાઇલ લૉગિન",
+  "Enter your mobile number": "તમારો મોબાઇલ નંબર દાખલ કરો",
+  "Mobile Number": "મોબાઇલ નંબર",
+  "Send OTP": "OTP મોકલો",
+  "Step 3 · Guest Mode": "પગલું 3 · અતિથિ મોડ",
+  "Continuing without account": "ખાતા વિના ચાલુ",
 
   Back: "પાછળ",
   Continue: "આગળ વધો",
@@ -298,6 +421,18 @@ const interviewHi: Dict = {
   Back: "पीछे",
   "One side": "एक तरफ",
   "I am not sure": "मुझे ठीक से पता नहीं",
+
+  // Allergy questions (shared with interview)
+  "Do you have any known allergies?": "क्या आपको कोई ज्ञात एलर्जी है?",
+  "No known allergies": "कोई ज्ञात एलर्जी नहीं",
+  "Medicine allergy": "दवाई से एलर्जी",
+  "Food allergy": "खाने से एलर्जी",
+  "Dust / Pollen allergy": "धूल / पराग से एलर्जी",
+  "Not sure": "पक्का नहीं",
+  "Are you allergic to any medicines?": "क्या आपको किसी दवाई से एलर्जी है?",
+  "Yes — Penicillin / Antibiotics": "हाँ — पेनिसिलिन / एंटीबायोटिक",
+  "Yes — Painkillers (NSAIDs)": "हाँ — दर्दनिवारक (NSAIDs)",
+  "Yes — Other medicines": "हाँ — अन्य दवाइयाँ",
 };
 
 const interviewGu: Dict = {
@@ -348,6 +483,18 @@ const interviewGu: Dict = {
   Back: "પાછળ",
   "One side": "એક બાજુ",
   "I am not sure": "મને ચોક્કસ ખબર નથી",
+
+  // Allergy questions (shared with interview)
+  "Do you have any known allergies?": "શું તમને કોઈ જાણીતી એલર્જી છે?",
+  "No known allergies": "કોઈ જાણીતી એલર્જી નથી",
+  "Medicine allergy": "દવાથી એલર્જી",
+  "Food allergy": "ખોરાકથી એલર્જી",
+  "Dust / Pollen allergy": "ધૂળ / પરાગથી એલર્જી",
+  "Not sure": "ચોક્કસ નહીં",
+  "Are you allergic to any medicines?": "શું તમને કોઈ દવાથી એલર્જી છે?",
+  "Yes — Penicillin / Antibiotics": "હા — પેનિસિલિન / એન્ટિબાયોટિક",
+  "Yes — Painkillers (NSAIDs)": "હા — દર્દ-નિવારક (NSAIDs)",
+  "Yes — Other medicines": "હા — અન્ય દવાઓ",
 };
 
 void questionsHi;
