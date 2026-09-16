@@ -71,6 +71,14 @@ const hi: Dict = {
   "Please alert medical staff. This is not a diagnosis.":
     "कृपया चिकित्सा कर्मचारी को बताएं। यह निदान नहीं है।",
 
+  // Voice confirmation
+  "Did you mean this?": "क्या आपका यही मतलब था?",
+  "This answer will be saved as free text for your doctor.": "यह उत्तर आपके डॉक्टर के लिए टेक्स्ट के रूप में सहेजा जाएगा।",
+  "Yes, that's correct": "हाँ, यही सही है",
+  "Try again": "फिर से कोशिश करें",
+  "Voice answer recorded": "वॉइस उत्तर दर्ज किया गया",
+  "Selected": "चुना गया",
+
   // Allergy questions
   "Do you have any known allergies?": "क्या आपको कोई ज्ञात एलर्जी है?",
   "No known allergies": "कोई ज्ञात एलर्जी नहीं",
@@ -251,6 +259,14 @@ const gu: Dict = {
   "Potential red flag detected.": "સંભવિત ગંભીર સંકેત મળ્યો.",
   "Please alert medical staff. This is not a diagnosis.":
     "કૃપા કરીને તબીબી સ્ટાફને જાણ કરો. આ નિદાન નથી.",
+
+  // Voice confirmation
+  "Did you mean this?": "શું તમારો આ મતલબ હતો?",
+  "This answer will be saved as free text for your doctor.": "આ જવાબ તમારા ડૉક્ટર માટે ટેક્સ્ટ તરીકે સહેજ કરાશે.",
+  "Yes, that's correct": "હા, આ સાચું છે",
+  "Try again": "ફરી પ્રયાસ કરો",
+  "Voice answer recorded": "વૉઇસ જવાબ નોંધાયો",
+  "Selected": "પસંદ કરાયું",
 
   // Allergy questions
   "Do you have any known allergies?": "શું તમને કોઈ જાણીતી એલર્જી છે?",

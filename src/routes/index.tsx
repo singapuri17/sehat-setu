@@ -182,6 +182,8 @@ function MediKiosk() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [speechState, setSpeechState] = useState<SpeechState>("idle");
   const [transcription, setTranscription] = useState("");
+  // When voice doesn't match any choice, we hold the transcript here for confirmation
+  const [pendingVoice, setPendingVoice] = useState<string | null>(null);
   const [documents, setDocuments] = useState<string[]>(["Blood_Report.pdf", "Prescription.jpg"]);
   const [processing, setProcessing] = useState(false);
   const [extracted, setExtracted] = useState<ExtractedInformation | null>(null);
@@ -207,6 +209,7 @@ function MediKiosk() {
     setAnswers({});
     setSpeechState("idle");
     setTranscription("");
+    setPendingVoice(null);
     setDocuments([]);
     setProcessing(false);
     setExtracted(null);
@@ -214,9 +217,44 @@ function MediKiosk() {
 
   const startSpeech = async () => {
     setSpeechState("listening");
+    setPendingVoice(null);
     const result = await speechToText(lang, setSpeechState);
-    setTranscription(result.text);
+    const rawText = result.text.trim();
+    setTranscription(rawText);
     setSpeechState("result");
+
+    // Try to fuzzy-match the transcript against available choices
+    const choices = currentQuestion.choices ?? [];
+    if (choices.length > 0 && rawText) {
+      const normalized = rawText.toLowerCase();
+      // Exact or substring match against the translated choice text
+      const matched = choices.find((c) => {
+        const translated = t(c).toLowerCase();
+        return (
+          normalized === translated ||
+          translated.includes(normalized) ||
+          normalized.includes(translated) ||
+          // also try matching against English original
+          c.toLowerCase().includes(normalized) ||
+          normalized.includes(c.toLowerCase())
+        );
+      });
+      if (matched) {
+        // Auto-select the matched choice
+        setAnswers((a) => ({ ...a, [questionIndex]: matched }));
+        setPendingVoice(null);
+        // Speak confirmation in voice mode
+        if (inputMode === "voice") {
+          await speakText(`${t("Selected")}: ${t(matched)}`, lang);
+        }
+      } else {
+        // No match — hold for user confirmation
+        setPendingVoice(rawText);
+      }
+    } else if (rawText) {
+      // No choices (open question) — store directly
+      setAnswers((a) => ({ ...a, [questionIndex]: rawText }));
+    }
   };
 
   const processDocuments = async () => {
@@ -323,10 +361,24 @@ function MediKiosk() {
             t={t} lang={lang} inputMode={inputMode}
             details={details} currentQuestion={currentQuestion}
             questionIndex={questionIndex} answers={answers}
-            setAnswer={(answer) => setAnswers((a) => ({ ...a, [questionIndex]: answer }))}
+            setAnswer={(answer) => { setAnswers((a) => ({ ...a, [questionIndex]: answer })); setPendingVoice(null); }}
+            pendingVoice={pendingVoice}
+            onConfirmVoice={() => {
+              if (pendingVoice) {
+                setAnswers((a) => ({ ...a, [questionIndex]: pendingVoice }));
+                setPendingVoice(null);
+              }
+            }}
+            onRejectVoice={() => {
+              setPendingVoice(null);
+              setSpeechState("idle");
+            }}
             speechState={speechState} transcription={transcription} startSpeech={startSpeech}
             hasRedFlag={hasRedFlag} onBack={patientBack}
-            onNext={() => questionIndex < questions.length - 1 ? setQuestionIndex((i) => i + 1) : setView("documents")}
+            onNext={() => {
+              setPendingVoice(null);
+              questionIndex < questions.length - 1 ? setQuestionIndex((i) => i + 1) : setView("documents");
+            }}
           />
         )}
         {view === "documents" && (
@@ -969,13 +1021,17 @@ function buildSpokenQuestion(question: string, choices: string[] | undefined, t:
 
 function Interview({
   t, lang, inputMode, details, currentQuestion, questionIndex, answers,
-  setAnswer, speechState, transcription, startSpeech, hasRedFlag, onBack, onNext,
+  setAnswer, pendingVoice, onConfirmVoice, onRejectVoice,
+  speechState, transcription, startSpeech, hasRedFlag, onBack, onNext,
 }: {
   t: T; lang: Lang; inputMode: InputMode;
   details: typeof initialDetails;
   currentQuestion: { question: string; choices?: string[] };
   questionIndex: number; answers: Record<number, string>;
   setAnswer: (answer: string) => void;
+  pendingVoice: string | null;
+  onConfirmVoice: () => void;
+  onRejectVoice: () => void;
   speechState: SpeechState; transcription: string;
   startSpeech: () => void; hasRedFlag: boolean;
   onBack: () => void; onNext: () => void;
@@ -1044,6 +1100,53 @@ function Interview({
               {t(choice)}
             </Button>
           ))}
+        </div>
+      )}
+
+      {/* ── Voice confirmation card ─────────────────────────────────────────── */}
+      {pendingVoice && (
+        <div className="mt-5 rounded-2xl border-2 border-kiosk-yellow/50 bg-kiosk-yellow/10 p-5 mk-rise">
+          <p className="text-xs font-black uppercase tracking-wide text-kiosk-yellow/80 mb-2">
+            🎙 {t("Did you mean this?")}
+          </p>
+          {/* Show the raw transcript prominently */}
+          <p className="text-xl font-black text-kiosk-navy leading-snug">
+            "{pendingVoice}"
+          </p>
+          <p className="mt-1 text-xs font-medium text-foreground/50">
+            {t("This answer will be saved as free text for your doctor.")}
+          </p>
+          <div className="mt-4 flex gap-3">
+            {/* Yes — confirm and store as free text answer */}
+            <Button
+              onClick={onConfirmVoice}
+              className="flex-1 min-h-12 rounded-2xl bg-kiosk-teal font-black text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90"
+            >
+              <CheckCircle2 size={18} /> {t("Yes, that's correct")}
+            </Button>
+            {/* No — discard and let them re-record */}
+            <Button
+              variant="outline"
+              onClick={onRejectVoice}
+              className="flex-1 min-h-12 rounded-2xl border-border font-bold text-kiosk-navy hover:bg-kiosk-coral/5 hover:border-kiosk-coral/30"
+            >
+              <RefreshCw size={16} /> {t("Try again")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Show confirmed free-text answer badge */}
+      {!pendingVoice && answers[questionIndex] && !currentQuestion.choices?.includes(answers[questionIndex]) && (
+        <div className="mt-4 flex items-center gap-3 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-4 py-3">
+          <CheckCircle2 size={18} className="text-kiosk-teal shrink-0" />
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wide text-kiosk-teal/70">{t("Voice answer recorded")}</p>
+            <p className="text-sm font-bold text-kiosk-navy">"{answers[questionIndex]}"</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => setAnswer("")} className="ml-auto text-foreground/30 hover:text-kiosk-coral">
+            <X size={15} />
+          </Button>
         </div>
       )}
 
