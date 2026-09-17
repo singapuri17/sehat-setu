@@ -1184,7 +1184,7 @@ function Interview({
               : t("Tap the microphone and say your answer")}
           </p>
           <p className="mt-1 text-[10px] font-bold text-kiosk-teal/60">
-            {lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Web Speech · हिन्दी" : "🎙 Web Speech · ગુજરાતી"}
+            {lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Bhashini · हिन्दी" : "🎙 Bhashini · ગુજરાતી"}
           </p>
         </div>
 
