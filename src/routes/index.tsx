@@ -8,7 +8,7 @@ import {
   ChevronRight, CircleHelp, ClipboardList, Clock3, FileImage, FileText, HeartPulse,
   LogIn, Menu, Mic, Paperclip, Pencil, Plus, RefreshCw, Save, Settings, ShieldCheck,
   Stethoscope, Upload, UserRound, Users, Volume2, X, Brain,
-  CheckCircle2, PhoneCall, HelpCircle, Touchpad, MonitorSmartphone, RotateCcw,
+  CheckCircle2, PhoneCall, HelpCircle, Touchpad, MonitorSmartphone, RotateCcw, Smartphone, QrCode,
 } from "lucide-react";
 import { extractDocument, type ExtractedInformation } from "@/lib/documentService";
 import { speechToText, type SpeechState } from "@/lib/speechService";
@@ -16,6 +16,8 @@ import { speak, cancelSpeech } from "@/lib/ttsService";
 import { languageOptions, makeT, type T, type Lang } from "@/lib/i18n";
 import { demoConsultation } from "@/lib/consultationService";
 import { demoPatients } from "@/lib/patientService";
+import { createSession, mobileUrl } from "@/lib/sessionService";
+import { QRCodeSVG } from "qrcode.react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -246,6 +248,11 @@ function MediKiosk() {
   const [selectedPatient, setSelectedPatient] = useState(defaultPatient.token);
   const [showSahayak, setShowSahayak] = useState(false);
   const [showExit, setShowExit] = useState(false);
+  // Kiosk session ID — created once on mount, used to generate the mobile handoff QR
+  const [kioskSessionId, setKioskSessionId] = useState<string | null>(null);
+  useEffect(() => {
+    createSession("kiosk").then((s) => setKioskSessionId(s.id)).catch(() => {});
+  }, []);
 
   const questions = interviewQuestions[details.complaint];
   const currentQuestion = questions[questionIndex] ?? { question: "What would you like to tell us?", choices: [] };
@@ -272,6 +279,8 @@ function MediKiosk() {
     setExtracted(null);
     setShowExit(false);
     cancelSpeech();
+    // Create a fresh session for the next patient
+    createSession("kiosk").then((s) => setKioskSessionId(s.id)).catch(() => {});
   };
 
   const startSpeech = async () => {
@@ -398,7 +407,7 @@ function MediKiosk() {
 
       <main className="mx-auto max-w-5xl px-5 pb-24">
         {view === "welcome" && (
-          <Welcome t={t} lang={lang} setLang={setLang} onStart={() => setView("modeSelect")} />
+          <Welcome t={t} lang={lang} setLang={setLang} onStart={() => setView("modeSelect")} onMobileStart={() => setView("modeSelect")} />
         )}
         {view === "modeSelect" && (
           <ModeSelect t={t} inputMode={inputMode} setInputMode={setInputMode} onBack={patientBack} onContinue={() => setView("consent")} />
@@ -451,7 +460,7 @@ function MediKiosk() {
           <Review t={t} details={details} stream={stream} transcription={transcription} documents={documents} extracted={extracted} onBack={patientBack} onSubmit={() => setView("success")} />
         )}
         {view === "success" && (
-          <Success t={t} name={details.name || "Patient"} onSummary={() => setView("review")} onDoctor={() => setView("doctorLogin")} onNewPatient={resetSession} />
+          <Success t={t} name={details.name || "Patient"} sessionId={kioskSessionId} onSummary={() => setView("review")} onDoctor={() => setView("doctorLogin")} onNewPatient={resetSession} />
         )}
       </main>
 
@@ -469,81 +478,126 @@ function MediKiosk() {
 
 // ─── Welcome Screen (kiosk-style card) ───────────────────────────────────────
 
-function Welcome({ t, lang, setLang, onStart }: { t: T; lang: Lang; setLang: (l: Lang) => void; onStart: () => void }) {
+function Welcome({ t, lang, setLang, onStart, onMobileStart }: {
+  t: T; lang: Lang; setLang: (l: Lang) => void;
+  onStart: () => void; onMobileStart: () => void;
+}) {
+  // Generate a fresh QR session for the mobile panel
+  const [mobileQrUrl, setMobileQrUrl] = useState<string | null>(null);
+  const [qrSessionId, setQrSessionId] = useState<string | null>(null);
+  useEffect(() => {
+    createSession("mobile", lang).then((s) => {
+      setQrSessionId(s.id);
+      setMobileQrUrl(mobileUrl(s.id));
+    }).catch(() => {
+      // Fallback: just link to /mobile with no session
+      setMobileQrUrl(`${typeof window !== "undefined" ? window.location.origin : ""}/mobile`);
+    });
+  // Regenerate QR when language changes so the session carries the right lang
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   return (
     <div className="mk-rise flex min-h-[calc(100vh-130px)] flex-col items-center justify-center py-8">
-      <div className="w-full max-w-xl rounded-3xl border-2 border-kiosk-teal/25 bg-white/90 p-8 shadow-2xl shadow-kiosk-navy/10 backdrop-blur-xl">
-        {/* Logo + name */}
-        <div className="flex flex-col items-center text-center">
-          <div className="relative mb-4">
-            <img src="/logo.png" alt="MediKiosk logo" className="size-24 rounded-[22px] object-contain drop-shadow-xl" />
-            <span className="absolute -bottom-1 -right-1 grid size-8 place-items-center rounded-xl bg-kiosk-coral text-white shadow-md">
-              <HeartPulse size={16} />
-            </span>
-          </div>
-
-          <h1 className="text-4xl font-black tracking-tight text-kiosk-navy">MediKiosk</h1>
-          <p className="mt-1 text-sm font-bold text-kiosk-teal">{t("AI-assisted pre-consultation")}</p>
-
-          <p className="mt-4 max-w-xs text-base font-medium leading-relaxed text-foreground/60">
-            {t("Answer a few simple questions so your doctor is ready when you are.")}
-          </p>
+      {/* Header */}
+      <div className="mb-6 flex flex-col items-center text-center">
+        <div className="relative mb-3">
+          <img src="/logo.png" alt="MediKiosk logo" className="size-20 rounded-[20px] object-contain drop-shadow-xl" />
+          <span className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-xl bg-kiosk-coral text-white shadow-md">
+            <HeartPulse size={14} />
+          </span>
         </div>
+        <h1 className="text-4xl font-black tracking-tight text-kiosk-navy">MediKiosk</h1>
+        <p className="mt-1 text-sm font-bold text-kiosk-teal">{t("AI-assisted pre-consultation")}</p>
+      </div>
 
-        {/* Language selector */}
-        <div className="mt-7">
-          <p className="mb-3 text-center text-xs font-black uppercase tracking-[0.18em] text-foreground/40">
-            {t("Choose your language")}
-          </p>
-          <div className="grid grid-cols-3 gap-3">
-            {languageOptions.map((item) => (
-              <Button
-                key={item.code}
-                variant={lang === item.code ? "default" : "outline"}
-                onClick={() => setLang(item.code)}
-                className={`min-h-14 rounded-2xl text-base font-black transition-all ${
-                  lang === item.code
-                    ? "bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/30 hover:bg-kiosk-teal/90"
-                    : "border-border/60 bg-white text-kiosk-navy hover:border-kiosk-teal/40 hover:bg-kiosk-teal/5"
-                }`}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Start button */}
-        <Button
-          onClick={onStart}
-          className="mt-7 min-h-16 w-full rounded-2xl bg-kiosk-coral text-xl font-black text-white shadow-xl shadow-kiosk-coral/35 hover:bg-kiosk-coral/90 transition-all"
-        >
-          {t("Start")} <ChevronRight size={24} />
-        </Button>
-
-        {/* Safety notice */}
-        <div className="mt-5 flex items-center justify-center gap-2 text-xs font-semibold text-foreground/45">
-          <ShieldCheck size={13} className="text-kiosk-green" />
-          {t("Safe, simple, patient-first · This kiosk does not provide a diagnosis")}
+      {/* Language selector */}
+      <div className="w-full max-w-2xl mb-5">
+        <p className="mb-2 text-center text-xs font-black uppercase tracking-[0.18em] text-foreground/40">{t("Choose your language")}</p>
+        <div className="grid grid-cols-3 gap-3">
+          {languageOptions.map((item) => (
+            <Button key={item.code} variant={lang === item.code ? "default" : "outline"}
+              onClick={() => setLang(item.code)}
+              className={`min-h-12 rounded-2xl text-base font-black transition-all ${lang === item.code ? "bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/30 hover:bg-kiosk-teal/90" : "border-border/60 bg-white text-kiosk-navy hover:border-kiosk-teal/40 hover:bg-kiosk-teal/5"}`}>
+              {item.label}
+            </Button>
+          ))}
         </div>
       </div>
 
+      {/* ── Dual-channel choice ─────────────────────────────────────────────── */}
+      <div className="w-full max-w-2xl grid gap-4 sm:grid-cols-2">
+
+        {/* Kiosk channel */}
+        <div className="rounded-3xl border-2 border-kiosk-teal/30 bg-white/90 p-6 shadow-xl shadow-kiosk-navy/8 backdrop-blur-xl flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="grid size-12 place-items-center rounded-2xl bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/30">
+              <Touchpad size={24} />
+            </div>
+            <div>
+              <p className="text-lg font-black text-kiosk-navy">Use this Kiosk</p>
+              <p className="text-xs font-medium text-foreground/50">Assisted · Voice + Touch</p>
+            </div>
+          </div>
+          <p className="text-sm font-medium leading-relaxed text-foreground/60 flex-1">
+            {t("Answer a few simple questions so your doctor is ready when you are.")}
+          </p>
+          <Button onClick={onStart}
+            className="mt-5 min-h-14 w-full rounded-2xl bg-kiosk-coral text-base font-black text-white shadow-xl shadow-kiosk-coral/35 hover:bg-kiosk-coral/90 transition-all">
+            {t("Start")} <ChevronRight size={22} />
+          </Button>
+        </div>
+
+        {/* Mobile / QR channel */}
+        <div className="rounded-3xl border-2 border-kiosk-teal/20 bg-white/90 p-6 shadow-xl shadow-kiosk-navy/8 backdrop-blur-xl flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="grid size-12 place-items-center rounded-2xl bg-kiosk-navy text-white shadow-lg shadow-kiosk-navy/30">
+              <Smartphone size={24} />
+            </div>
+            <div>
+              <p className="text-lg font-black text-kiosk-navy">Use Your Phone</p>
+              <p className="text-xs font-medium text-foreground/50">Personal · Complete before you reach counter</p>
+            </div>
+          </div>
+
+          {/* QR code */}
+          <div className="flex flex-col items-center flex-1">
+            <div className="rounded-2xl bg-white border border-border/40 p-3 shadow-sm">
+              {mobileQrUrl
+                ? <QRCodeSVG value={mobileQrUrl} size={140} fgColor="#0f3052" bgColor="#ffffff"
+                    level="M" imageSettings={{ src: "/logo.png", height: 28, width: 28, excavate: true }} />
+                : <div className="size-[140px] flex items-center justify-center">
+                    <RefreshCw size={24} className="animate-spin text-kiosk-teal/40" />
+                  </div>
+              }
+            </div>
+            <p className="mt-2 text-xs font-bold text-foreground/50 text-center">Scan to start on your phone</p>
+            {qrSessionId && (
+              <p className="mt-1 font-mono text-[11px] font-black tracking-[0.2em] text-kiosk-teal/70">{qrSessionId}</p>
+            )}
+          </div>
+
+          <p className="mt-3 text-[10px] font-medium text-center text-foreground/35 leading-relaxed">
+            No smartphone? Use the kiosk on the left. Staff are always available to help.
+          </p>
+        </div>
+      </div>
+
+      {/* Safety notice */}
+      <div className="mt-5 flex items-center justify-center gap-2 text-xs font-semibold text-foreground/45">
+        <ShieldCheck size={13} className="text-kiosk-green" />
+        {t("Safe, simple, patient-first · This kiosk does not provide a diagnosis")}
+      </div>
+
       {/* Ministry logos */}
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-6 opacity-60">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Emblem_of_India_with_transparent_background.png"
-          alt="Emblem of India"
-          className="h-10 w-auto"
-        />
-        <img
-          src="https://qa.pikorua.ai/assets/img/logo-abha.png"
-          alt="Ayushman Bharat Digital Mission"
-          className="h-10 w-auto"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-        />
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-6 opacity-55">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Emblem_of_India_with_transparent_background.png"
+          alt="Emblem of India" className="h-9 w-auto" />
+        <img src="https://qa.pikorua.ai/assets/img/logo-abha.png" alt="Ayushman Bharat Digital Mission"
+          className="h-9 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
         <div className="flex flex-col items-center">
-          <div className="grid size-10 place-items-center rounded-xl bg-kiosk-navy/10">
-            <Plus size={20} className="text-kiosk-navy/50" strokeWidth={2} />
+          <div className="grid size-9 place-items-center rounded-xl bg-kiosk-navy/10">
+            <Plus size={18} className="text-kiosk-navy/50" strokeWidth={2} />
           </div>
           <span className="mt-1 text-[9px] font-bold text-foreground/35 uppercase tracking-wide">Ministry of Health</span>
         </div>
@@ -1590,7 +1644,10 @@ function Review({ t, details, stream, transcription, documents, extracted, onBac
 
 // ─── Success ──────────────────────────────────────────────────────────────────
 
-function Success({ t, name, onSummary, onDoctor, onNewPatient }: { t: T; name: string; onSummary: () => void; onDoctor: () => void; onNewPatient: () => void }) {
+function Success({ t, name, sessionId, onSummary, onDoctor, onNewPatient }: {
+  t: T; name: string; sessionId: string | null;
+  onSummary: () => void; onDoctor: () => void; onNewPatient: () => void;
+}) {
   // Auto-reset countdown (90 seconds for kiosk idle)
   const [countdown, setCountdown] = useState(90);
   useEffect(() => {
@@ -1603,50 +1660,86 @@ function Success({ t, name, onSummary, onDoctor, onNewPatient }: { t: T; name: s
     return () => clearInterval(timer);
   }, [onNewPatient]);
 
+  const handoffUrl = sessionId ? mobileUrl(sessionId) : null;
+
   return (
     <div className="mk-rise flex min-h-[calc(100vh-180px)] items-center justify-center py-10">
-      <div className="w-full max-w-sm rounded-3xl border-2 border-kiosk-teal/25 bg-white/90 p-8 text-center shadow-2xl">
-        <div className="mx-auto grid size-20 place-items-center rounded-full bg-kiosk-green/15 text-kiosk-green ring-8 ring-kiosk-green/10">
-          <Check size={44} strokeWidth={2.5} />
-        </div>
-        <p className="mt-6 text-xs font-black uppercase tracking-[0.2em] text-kiosk-green">{t("Ready for physician review")}</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-kiosk-navy">{t("Your history is ready.")}</h1>
-        <p className="mt-3 text-sm font-medium leading-relaxed text-foreground/55">
-          {name}, {t("your doctor can now review your information before consultation.")}
-        </p>
-
-        {/* Token */}
-        <div className="mt-6 rounded-2xl border border-kiosk-teal/20 bg-kiosk-teal/5 p-5">
-          <p className="text-xs font-black uppercase tracking-wide text-foreground/40">{t("Your token number")}</p>
-          <p className="mt-1 text-5xl font-black text-kiosk-coral tracking-tight">A-105</p>
-          <p className="mt-1 text-xs font-medium text-foreground/35">{t("Please wait in the queue")}</p>
-        </div>
-
-        {/* Actions */}
-        <div className="mt-6 flex flex-col gap-3">
-          <Button variant="outline" onClick={onSummary}
-            className="min-h-12 rounded-2xl border-border bg-white font-bold text-kiosk-navy hover:border-kiosk-teal/40 hover:bg-kiosk-teal/5">
-            <ClipboardList size={18} /> {t("View summary")}
-          </Button>
-          <Button onClick={onDoctor}
-            className="min-h-12 rounded-2xl bg-kiosk-teal font-bold text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90">
-            {t("Doctor view")} <Stethoscope size={18} />
-          </Button>
-        </div>
-
-        {/* New patient / session reset */}
-        <div className="mt-5 border-t border-border/40 pt-5">
-          <Button
-            onClick={onNewPatient}
-            className="min-h-14 w-full rounded-2xl bg-kiosk-navy text-base font-black text-white shadow-lg hover:bg-kiosk-navy/90 gap-2"
-          >
-            <RotateCcw size={20} />
-            {t("New Patient — Start Fresh")}
-          </Button>
-          <p className="mt-3 text-xs font-medium text-foreground/35">
-            {t("Auto-resets in")} <span className="font-black text-kiosk-coral">{countdown}s</span>
+      <div className="w-full max-w-lg space-y-4">
+        {/* ── Main success card ─────────────────────────────────────────── */}
+        <div className="rounded-3xl border-2 border-kiosk-teal/25 bg-white/90 p-8 text-center shadow-2xl">
+          <div className="mx-auto grid size-20 place-items-center rounded-full bg-kiosk-green/15 text-kiosk-green ring-8 ring-kiosk-green/10">
+            <Check size={44} strokeWidth={2.5} />
+          </div>
+          <p className="mt-6 text-xs font-black uppercase tracking-[0.2em] text-kiosk-green">{t("Ready for physician review")}</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-kiosk-navy">{t("Your history is ready.")}</h1>
+          <p className="mt-3 text-sm font-medium leading-relaxed text-foreground/55">
+            {name}, {t("your doctor can now review your information before consultation.")}
           </p>
+
+          {/* Token */}
+          <div className="mt-6 rounded-2xl border border-kiosk-teal/20 bg-kiosk-teal/5 p-5">
+            <p className="text-xs font-black uppercase tracking-wide text-foreground/40">{t("Your token number")}</p>
+            <p className="mt-1 text-5xl font-black text-kiosk-coral tracking-tight">A-105</p>
+            <p className="mt-1 text-xs font-medium text-foreground/35">{t("Please wait in the queue")}</p>
+          </div>
+
+          {/* Actions */}
+          <div className="mt-6 flex flex-col gap-3">
+            <Button variant="outline" onClick={onSummary}
+              className="min-h-12 rounded-2xl border-border bg-white font-bold text-kiosk-navy hover:border-kiosk-teal/40 hover:bg-kiosk-teal/5">
+              <ClipboardList size={18} /> {t("View summary")}
+            </Button>
+            <Button onClick={onDoctor}
+              className="min-h-12 rounded-2xl bg-kiosk-teal font-bold text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90">
+              {t("Doctor view")} <Stethoscope size={18} />
+            </Button>
+          </div>
+
+          {/* New patient / session reset */}
+          <div className="mt-5 border-t border-border/40 pt-5">
+            <Button onClick={onNewPatient}
+              className="min-h-14 w-full rounded-2xl bg-kiosk-navy text-base font-black text-white shadow-lg hover:bg-kiosk-navy/90 gap-2">
+              <RotateCcw size={20} />
+              {t("New Patient — Start Fresh")}
+            </Button>
+            <p className="mt-3 text-xs font-medium text-foreground/35">
+              {t("Auto-resets in")} <span className="font-black text-kiosk-coral">{countdown}s</span>
+            </p>
+          </div>
         </div>
+
+        {/* ── Continue on phone QR (kiosk → phone handoff) ─────────────── */}
+        {handoffUrl && (
+          <div className="rounded-3xl border-2 border-kiosk-navy/20 bg-white/90 p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="grid size-10 place-items-center rounded-xl bg-kiosk-navy text-white shadow-lg shadow-kiosk-navy/25">
+                <QrCode size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-black text-kiosk-navy">Continue on your phone</p>
+                <p className="text-xs font-medium text-foreground/50">Scan to view your session on any device</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="rounded-2xl bg-white border border-border/40 p-2 shadow-sm shrink-0">
+                <QRCodeSVG value={handoffUrl} size={100} fgColor="#0f3052" bgColor="#ffffff"
+                  level="M" imageSettings={{ src: "/logo.png", height: 22, width: 22, excavate: true }} />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium leading-relaxed text-foreground/55">
+                  Scan this QR to open your pre-consultation summary on your phone, or share with a family member.
+                </p>
+                {sessionId && (
+                  <div className="flex items-center gap-1.5 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-2.5 py-1.5">
+                    <Smartphone size={12} className="text-kiosk-teal" />
+                    <span className="font-mono text-xs font-black tracking-[0.2em] text-kiosk-teal">{sessionId}</span>
+                  </div>
+                )}
+                <p className="text-[10px] font-medium text-foreground/35">Session valid for 2 hours</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
