@@ -1590,14 +1590,33 @@ function Extracted({ t, extracted, onBack, onContinue }: { t: T; extracted: Extr
 
 function PillIcon() { return <span className="text-xl">◒</span>; }
 
-function InfoCard({ icon, title, value, tone = "teal", t = (s: string) => s }: { icon: React.ReactNode; title: string; value: string; tone?: "teal" | "warning"; t?: T }) {
+function InfoCard({ icon, title, value, tone = "teal", t = (s: string) => s, onEdit }: { icon: React.ReactNode; title: string; value: string; tone?: "teal" | "warning"; t?: T; onEdit?: (val: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [local, setLocal] = useState(value);
+  // Keep in sync when value changes from outside
+  useEffect(() => { setLocal(value); }, [value]);
   return (
     <div className={`rounded-2xl border p-4 ${tone === "warning" ? "border-kiosk-yellow/30 bg-kiosk-yellow/10" : "border-kiosk-teal/20 bg-kiosk-teal/5"}`}>
       <div className="mb-3 text-kiosk-teal">{icon}</div>
       <p className="text-[10px] font-black uppercase tracking-wide text-foreground/50">{title}</p>
-      <p className="mt-1 text-sm font-bold text-kiosk-navy">{value}</p>
-      <Button variant="ghost" className="mt-2 min-h-9 rounded-xl px-0 text-xs font-bold text-kiosk-coral hover:bg-kiosk-coral/5">
-        <Pencil size={14} /> {t("Edit")}
+      {editing ? (
+        <textarea
+          value={local}
+          onChange={(e) => setLocal(e.target.value)}
+          rows={2}
+          autoFocus
+          className="mt-1 w-full resize-none rounded-xl border border-kiosk-teal/30 bg-white p-2 text-sm font-bold text-kiosk-navy focus:outline-none focus:ring-2 focus:ring-kiosk-teal/30"
+        />
+      ) : (
+        <p className="mt-1 text-sm font-bold text-kiosk-navy">{local}</p>
+      )}
+      <Button variant="ghost"
+        onClick={() => {
+          if (editing) { onEdit?.(local); }
+          setEditing((e) => !e);
+        }}
+        className="mt-2 min-h-9 rounded-xl px-0 text-xs font-bold text-kiosk-coral hover:bg-kiosk-coral/5">
+        {editing ? <><Check size={13} /> {t("Done")}</> : <><Pencil size={14} /> {t("Edit")}</>}
       </Button>
     </div>
   );
@@ -1606,34 +1625,77 @@ function InfoCard({ icon, title, value, tone = "teal", t = (s: string) => s }: {
 // ─── Step 8: Review ───────────────────────────────────────────────────────────
 
 function Review({ t, details, stream, transcription, documents, extracted, onBack, onSubmit }: { t: T; details: typeof initialDetails; stream: MedicalStream | null; transcription: string; documents: string[]; extracted: ExtractedInformation | null; onBack: () => void; onSubmit: () => void }) {
-  const rows = useMemo(() => [
-    { title: t("Medical stream"), text: medicalStreams.find((s) => s.id === stream)?.name ?? "Not selected", source: "Patient selection" },
-    { title: t("Chief complaint"), text: t(details.complaint), source: t("Patient answer") },
-    { title: t("History of present illness"), text: transcription || t("Patient details recorded during interview."), source: t("🎤 Patient interview") },
-    { title: t("Past medical history"), text: extracted?.conditions.join(", ") || t("Not entered"), source: t("📄 Uploaded document") },
-    { title: t("Medications"), text: extracted?.medications.join(", ") || t("Not entered"), source: t("📄 Uploaded document") },
-    { title: t("Allergies"), text: t("Not entered"), source: t("Patient review") },
-    { title: t("Previous investigations"), text: extracted?.labResults.map((item) => `${item.name} — ${item.value} (${item.status})`).join(", ") || t("Not entered"), source: t("📄 Uploaded document") },
-  ], [t, stream, details, transcription, extracted]);
+  // Local editable copies of each row's text
+  const initialRows = useMemo(() => [
+    { title: t("Medical stream"),               text: medicalStreams.find((s) => s.id === stream)?.name ?? "Not selected", source: "Patient selection",        multiline: false },
+    { title: t("Chief complaint"),              text: t(details.complaint),                                                source: t("Patient answer"),        multiline: false },
+    { title: t("History of present illness"),   text: transcription || t("Patient details recorded during interview."),   source: t("🎤 Patient interview"),  multiline: true  },
+    { title: t("Past medical history"),         text: extracted?.conditions.join(", ") || t("Not entered"),               source: t("📄 Uploaded document"),  multiline: false },
+    { title: t("Medications"),                  text: extracted?.medications.join(", ") || t("Not entered"),              source: t("📄 Uploaded document"),  multiline: false },
+    { title: t("Allergies"),                    text: t("Not entered"),                                                    source: t("Patient review"),        multiline: false },
+    { title: t("Previous investigations"),      text: extracted?.labResults.map((item) => `${item.name} — ${item.value} (${item.status})`).join(", ") || t("Not entered"), source: t("📄 Uploaded document"), multiline: false },
+  ], [t, stream, details, transcription, extracted]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [rowTexts, setRowTexts] = useState<string[]>(() => initialRows.map((r) => r.text));
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  const saveEdit = (idx: number) => setEditingIndex(null);
+
   return (
     <KioskFrame t={t} onBack={onBack} onContinue={onSubmit} continueLabel="Confirm & send to doctor">
       <StepHeader eyebrow={t("Step 9 · Final check")} title={t("Is everything correct?")} subtitle={t("Review your information. Your doctor will verify it before care.")} step="9 / 9" />
+
+      {editingIndex !== null && (
+        <div className="mb-4 flex items-center gap-2 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-3 py-2 text-xs font-bold text-kiosk-teal">
+          <Pencil size={13} /> Editing: {initialRows[editingIndex]?.title} — tap ✓ Done when finished.
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2">
-        {rows.map((row) => (
-          <div key={row.title} className="rounded-2xl border border-border/50 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-wide text-foreground/45">{row.title}</p>
-                <p className="mt-1 text-sm font-bold text-kiosk-navy">{row.text}</p>
+        {initialRows.map((row, idx) => {
+          const isEditing = editingIndex === idx;
+          return (
+            <div key={row.title}
+              className={`rounded-2xl border p-4 shadow-sm transition-all ${isEditing ? "border-kiosk-teal/40 bg-white ring-2 ring-kiosk-teal/15" : "border-border/50 bg-white"}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-wide text-foreground/45">{row.title}</p>
+                  {isEditing ? (
+                    row.multiline ? (
+                      <textarea
+                        value={rowTexts[idx]}
+                        onChange={(e) => setRowTexts((prev) => { const n = [...prev]; n[idx] = e.target.value; return n; })}
+                        rows={3}
+                        autoFocus
+                        className="mt-1 w-full resize-none rounded-xl border border-kiosk-teal/30 bg-kiosk-teal/3 p-2 text-sm font-medium text-kiosk-navy focus:outline-none focus:ring-2 focus:ring-kiosk-teal/30"
+                      />
+                    ) : (
+                      <input
+                        value={rowTexts[idx]}
+                        onChange={(e) => setRowTexts((prev) => { const n = [...prev]; n[idx] = e.target.value; return n; })}
+                        autoFocus
+                        className="mt-1 w-full rounded-xl border border-kiosk-teal/30 bg-kiosk-teal/3 px-2 py-1.5 text-sm font-medium text-kiosk-navy focus:outline-none focus:ring-2 focus:ring-kiosk-teal/30"
+                      />
+                    )
+                  ) : (
+                    <p className="mt-1 text-sm font-bold text-kiosk-navy">{rowTexts[idx]}</p>
+                  )}
+                </div>
+                <Button
+                  size="icon" variant="ghost"
+                  onClick={() => isEditing ? saveEdit(idx) : setEditingIndex(idx)}
+                  aria-label={isEditing ? "Save edit" : `Edit ${row.title}`}
+                  className={`shrink-0 transition-colors ${isEditing ? "text-kiosk-teal hover:bg-kiosk-teal/10" : "text-kiosk-coral hover:bg-kiosk-coral/5"}`}
+                >
+                  {isEditing ? <Check size={16} /> : <Pencil size={16} />}
+                </Button>
               </div>
-              <Button size="icon" variant="ghost" className="shrink-0 text-kiosk-coral hover:bg-kiosk-coral/5" aria-label={`Edit ${row.title}`}>
-                <Pencil size={16} />
-              </Button>
+              <p className="mt-2 text-[10px] font-bold text-kiosk-teal">{row.source}</p>
             </div>
-            <p className="mt-2 text-[10px] font-bold text-kiosk-teal">{row.source}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
       <div className="mt-5 flex items-start gap-3 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 p-3 text-xs font-bold text-kiosk-navy">
         <ShieldCheck size={16} className="mt-0.5 shrink-0 text-kiosk-teal" /> {t("No diagnosis or treatment advice is provided by this prototype.")}
       </div>
