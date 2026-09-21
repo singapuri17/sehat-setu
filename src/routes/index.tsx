@@ -183,6 +183,7 @@ function MediKiosk() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [speechState, setSpeechState] = useState<SpeechState>("idle");
   const [transcription, setTranscription] = useState("");
+  const [lastAsrSource, setLastAsrSource] = useState<"web-speech" | "bhashini" | "whisper" | "fallback" | null>(null);
   // When voice doesn't match any choice, we hold the transcript here for confirmation
   const [pendingVoice, setPendingVoice] = useState<string | null>(null);
   const [documents, setDocuments] = useState<string[]>(["Blood_Report.pdf", "Prescription.jpg"]);
@@ -222,6 +223,7 @@ function MediKiosk() {
     const result = await speechToText(lang, setSpeechState);
     const rawText = result.text.trim();
     setTranscription(rawText);
+    setLastAsrSource(result.source);
     setSpeechState("result");
 
     // Try to fuzzy-match the transcript against available choices
@@ -374,6 +376,7 @@ function MediKiosk() {
               setSpeechState("idle");
             }}
             speechState={speechState} transcription={transcription} startSpeech={startSpeech}
+            lastAsrSource={lastAsrSource}
             hasRedFlag={hasRedFlag} onBack={patientBack}
             onNext={() => {
               setPendingVoice(null);
@@ -963,7 +966,7 @@ function buildSpokenQuestion(question: string, choices: string[] | undefined, t:
 function Interview({
   t, lang, inputMode, details, currentQuestion, questionIndex, answers,
   setAnswer, pendingVoice, onConfirmVoice, onRejectVoice,
-  speechState, transcription, startSpeech, hasRedFlag, onBack, onNext,
+  speechState, transcription, startSpeech, lastAsrSource, hasRedFlag, onBack, onNext,
 }: {
   t: T; lang: Lang; inputMode: InputMode;
   details: typeof initialDetails;
@@ -974,7 +977,9 @@ function Interview({
   onConfirmVoice: () => void;
   onRejectVoice: () => void;
   speechState: SpeechState; transcription: string;
-  startSpeech: () => void; hasRedFlag: boolean;
+  startSpeech: () => void;
+  lastAsrSource: "web-speech" | "bhashini" | "whisper" | "fallback" | null;
+  hasRedFlag: boolean;
   onBack: () => void; onNext: () => void;
 }) {
   const total = interviewQuestions[details.complaint].length;
@@ -1128,7 +1133,13 @@ function Interview({
               : t("Tap the microphone and say your answer")}
           </p>
           <p className="mt-1 text-[10px] font-bold text-kiosk-teal/60">
-            {lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Bhashini ASR · हिन्दी" : "🎙 Bhashini ASR · ગુજરાતી"}
+            {lastAsrSource === "bhashini"
+              ? `✅ Bhashini ASR · ${lang === "hi" ? "हिन्दी" : "ગુજરાતી"}`
+              : lastAsrSource === "whisper"
+              ? "⚠️ Whisper fallback"
+              : lastAsrSource === "web-speech"
+              ? `⚠️ Web Speech fallback · ${lang === "en" ? "English" : lang === "hi" ? "हिन्दी" : "ગુજરાતી"}`
+              : lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Bhashini ASR · हिन्दी" : "🎙 Bhashini ASR · ગુજરાતી"}
             {" · "}
             {lang === "en" ? "TTS: Web Speech" : "TTS: Bhashini"}
           </p>

@@ -101,7 +101,7 @@ export const APIRoute = createAPIFileRoute("/api/bhashini-tts")({
               serviceId,
               language: { sourceLanguage: langCode },
               gender: "female",
-              samplingRate: 8000,
+              // Do NOT specify samplingRate — let Bhashini return its native rate
             },
           },
         ],

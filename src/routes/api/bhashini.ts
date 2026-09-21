@@ -81,6 +81,8 @@ export const APIRoute = createAPIFileRoute("/api/bhashini")({
       }
 
       // ── Step 2: Call the inference pipeline with the audio ─────────────────
+      // The browser records audio/webm (opus). Bhashini accepts "wav", "mp3",
+      // "flac", or "webm". Sending "webm" avoids any server-side decode failure.
       const inferencePayload = {
         pipelineTasks: [
           {
@@ -88,8 +90,9 @@ export const APIRoute = createAPIFileRoute("/api/bhashini")({
             config: {
               serviceId,
               language: { sourceLanguage: langCode },
-              audioFormat: "flac",
+              audioFormat: "webm",
               samplingRate: 16000,
+              postProcessors: null,
             },
           },
         ],
