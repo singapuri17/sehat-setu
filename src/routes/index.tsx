@@ -168,6 +168,60 @@ function HelpButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+// ─── Exit Session Button ──────────────────────────────────────────────────────
+
+function ExitButton({ t, onClick }: { t: T; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Exit session"
+      className="fixed bottom-6 left-6 z-40 flex min-h-14 items-center gap-2 rounded-2xl border-2 border-kiosk-coral/60 bg-white px-5 text-sm font-black text-kiosk-coral shadow-2xl transition-all hover:bg-kiosk-coral hover:text-white active:scale-95"
+    >
+      <X size={20} />
+      {t("Exit Session")}
+    </button>
+  );
+}
+
+// ─── Exit Session Confirmation Modal ─────────────────────────────────────────
+
+function ExitModal({ t, onConfirm, onCancel }: { t: T; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative mx-auto w-full max-w-sm rounded-3xl border-2 border-kiosk-coral/40 bg-white p-8 shadow-2xl text-center mk-rise">
+        {/* Icon */}
+        <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-kiosk-coral/10 shadow-inner">
+          <X size={36} className="text-kiosk-coral" strokeWidth={2.5} />
+        </div>
+
+        <h2 className="text-xl font-black tracking-tight text-kiosk-navy">
+          {t("Are you sure you want to exit?")}
+        </h2>
+        <p className="mt-3 text-sm font-medium leading-relaxed text-foreground/60">
+          {t("All your information will be cleared and the kiosk will reset for the next patient.")}
+        </p>
+
+        <div className="mt-7 flex flex-col gap-3">
+          <Button
+            onClick={onConfirm}
+            className="min-h-14 w-full rounded-2xl bg-kiosk-coral text-base font-black text-white shadow-lg shadow-kiosk-coral/25 hover:bg-kiosk-coral/90"
+          >
+            <X size={20} /> {t("Yes, exit now")}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            className="min-h-12 w-full rounded-2xl border-border bg-white font-bold text-kiosk-navy hover:bg-kiosk-teal/5 hover:border-kiosk-teal/30"
+          >
+            <ArrowLeft size={18} /> {t("No, go back")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main App ────────────────────────────────────────────────────────────────
 
 function MediKiosk() {
@@ -191,6 +245,7 @@ function MediKiosk() {
   const [extracted, setExtracted] = useState<ExtractedInformation | null>(null);
   const [selectedPatient, setSelectedPatient] = useState(defaultPatient.token);
   const [showSahayak, setShowSahayak] = useState(false);
+  const [showExit, setShowExit] = useState(false);
 
   const questions = interviewQuestions[details.complaint];
   const currentQuestion = questions[questionIndex] ?? { question: "What would you like to tell us?", choices: [] };
@@ -215,6 +270,8 @@ function MediKiosk() {
     setDocuments([]);
     setProcessing(false);
     setExtracted(null);
+    setShowExit(false);
+    cancelSpeech();
   };
 
   const startSpeech = async () => {
@@ -353,7 +410,7 @@ function MediKiosk() {
           <PatientLogin t={t} onBack={patientBack} onContinue={() => setView("details")} />
         )}
         {view === "details" && (
-          <PatientDetails t={t} details={details} setDetails={setDetails} onBack={patientBack} onContinue={() => setView("stream")} />
+          <PatientDetails t={t} lang={lang} inputMode={inputMode} details={details} setDetails={setDetails} onBack={patientBack} onContinue={() => setView("stream")} />
         )}
         {view === "stream" && (
           <MedicalStreamSelect t={t} stream={stream} setStream={setStream} onBack={patientBack} onContinue={() => setView("interview")} />
@@ -400,7 +457,12 @@ function MediKiosk() {
 
       {/* Persistent help button */}
       <HelpButton onClick={() => setShowSahayak(true)} />
+      {/* Exit session button — hidden on welcome/success/doctor views */}
+      {!["welcome", "modeSelect", "success", "doctorLogin", "dashboard", "case"].includes(view) && (
+        <ExitButton t={t} onClick={() => { cancelSpeech(); setShowExit(true); }} />
+      )}
       {showSahayak && <SahayakModal onClose={() => setShowSahayak(false)} />}
+      {showExit && <ExitModal t={t} onConfirm={resetSession} onCancel={() => setShowExit(false)} />}
     </div>
   );
 }
@@ -907,25 +969,261 @@ function MedicalStreamSelect({
 
 const initialDetails = { name: "", age: "", gender: "", complaint: "Abdominal pain" as Complaint };
 
-function PatientDetails({ t, details, setDetails, onBack, onContinue }: { t: T; details: typeof initialDetails; setDetails: React.Dispatch<React.SetStateAction<typeof initialDetails>>; onBack: () => void; onContinue: () => void }) {
+// Voice-fill field sequence
+type VoiceField = "name" | "age" | "gender" | "complaint" | "done";
+
+const VOICE_FIELD_PROMPTS: Record<VoiceField, string> = {
+  name: "Please say your full name.",
+  age: "Please say your age in years.",
+  gender: "Please say Male, Female, or Other.",
+  complaint: "Please say your main problem — Fever, Abdominal pain, Headache, Cough, or Chest pain.",
+  done: "",
+};
+
+const VOICE_FIELD_HINT: Record<VoiceField, string> = {
+  name: "Say your name",
+  age: "Say your age",
+  gender: "Say Male, Female, or Other",
+  complaint: "Say your main problem",
+  done: "",
+};
+
+function PatientDetails({ t, lang, inputMode, details, setDetails, onBack, onContinue }: {
+  t: T; lang: Lang; inputMode: InputMode;
+  details: typeof initialDetails;
+  setDetails: React.Dispatch<React.SetStateAction<typeof initialDetails>>;
+  onBack: () => void; onContinue: () => void;
+}) {
+  const isVoice = inputMode === "voice";
+
+  // Voice-fill state
+  const [voiceField, setVoiceField] = useState<VoiceField>("name");
+  const [fieldState, setFieldState] = useState<SpeechState>("idle");
+  const [savedField, setSavedField] = useState<VoiceField | null>(null);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+
+  // Auto-speak the prompt for the current field in voice mode
+  useEffect(() => {
+    if (!isVoice || voiceField === "done") return;
+    let cancelled = false;
+    const run = async () => {
+      await speak(t(VOICE_FIELD_PROMPTS[voiceField]), lang);
+      if (!cancelled) listenForField(voiceField);
+    };
+    run();
+    return () => { cancelled = true; cancelSpeech(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceField, isVoice]);
+
+  const listenForField = async (field: VoiceField) => {
+    if (field === "done") return;
+    setFieldState("listening");
+    setVoiceError(null);
+    try {
+      const result = await speechToText(lang, setFieldState);
+      const raw = result.text.trim();
+      if (!raw) { setVoiceError("No speech heard — tap the mic to try again."); setFieldState("idle"); return; }
+
+      if (field === "name") {
+        setDetails((d) => ({ ...d, name: raw }));
+        setSavedField("name");
+        setFieldState("result");
+        await speak(`${t("Name saved")}: ${raw}`, lang);
+        setVoiceField("age");
+      } else if (field === "age") {
+        // Extract the first number found in the transcript
+        const num = raw.match(/\d+/)?.[0] ?? raw;
+        setDetails((d) => ({ ...d, age: num }));
+        setSavedField("age");
+        setFieldState("result");
+        await speak(`${t("Age saved")}: ${num}`, lang);
+        setVoiceField("gender");
+      } else if (field === "gender") {
+        const lower = raw.toLowerCase();
+        const genderMap: Record<string, string> = {
+          male: "Male", man: "Male", boy: "Male",
+          पुरुष: "Male", "पुरूष": "Male",
+          પુરુષ: "Male",
+          female: "Female", woman: "Female", girl: "Female",
+          महिला: "Female", औरत: "Female",
+          સ્ત્રી: "Female", "મહિલા": "Female",
+          other: "Other", अन्य: "Other", "अन्य": "Other", અન્ય: "Other",
+        };
+        const matched = Object.entries(genderMap).find(([k]) => lower.includes(k))?.[1] ?? null;
+        if (matched) {
+          setDetails((d) => ({ ...d, gender: matched }));
+          setSavedField("gender");
+          setFieldState("result");
+          await speak(`${t("Gender saved")}: ${t(matched)}`, lang);
+          setVoiceField("complaint");
+        } else {
+          setVoiceError(`Heard: "${raw}" — please say Male, Female, or Other.`);
+          setFieldState("idle");
+          setVoiceField("gender"); // re-trigger effect via key change trick
+        }
+      } else if (field === "complaint") {
+        const lower = raw.toLowerCase();
+        const complaintMap: Record<string, Complaint> = {
+          fever: "Fever", बुखार: "Fever", ताव: "Fever",
+          "abdominal pain": "Abdominal pain", "stomach pain": "Abdominal pain",
+          "पेट": "Abdominal pain", "पेट दर्द": "Abdominal pain", "પેટ": "Abdominal pain",
+          headache: "Headache", "head ache": "Headache",
+          "सिर दर्द": "Headache", "सिरदर्द": "Headache", "માથ": "Headache",
+          cough: "Cough", खाँसी: "Cough", ઉધરસ: "Cough",
+          "chest pain": "Chest pain", "chest": "Chest pain",
+          "छाती": "Chest pain", "छाती दर्द": "Chest pain", "છાતી": "Chest pain",
+        };
+        const matched = Object.entries(complaintMap).find(([k]) => lower.includes(k))?.[1] ?? null;
+        if (matched) {
+          setDetails((d) => ({ ...d, complaint: matched }));
+          setSavedField("complaint");
+          setFieldState("result");
+          await speak(`${t("Complaint saved")}: ${t(matched)}`, lang);
+          setVoiceField("done");
+        } else {
+          setVoiceError(`Heard: "${raw}" — please say one of the five complaints.`);
+          setFieldState("idle");
+        }
+      }
+    } catch {
+      setVoiceError("Mic error — tap the mic to try again.");
+      setFieldState("idle");
+    }
+  };
+
+  const VOICE_FIELDS: VoiceField[] = ["name", "age", "gender", "complaint"];
+
   return (
     <KioskFrame t={t} onBack={onBack} onContinue={onContinue} disabled={!details.name || !details.age || !details.gender}>
-      <StepHeader eyebrow={t("Step 4 · About you")} title={t("Tell us about yourself")} subtitle={t("Use the boxes below. You can ask for help.")} step="4 / 9" />
+      <StepHeader
+        eyebrow={t("Step 4 · About you")}
+        title={t("Tell us about yourself")}
+        subtitle={isVoice
+          ? t("Questions are read aloud · Answer by speaking")
+          : t("Use the boxes below. You can ask for help.")}
+        step="4 / 9"
+      />
+
+      {/* ── Voice mode: guided field-by-field flow ─────────────────────────── */}
+      {isVoice && voiceField !== "done" && (
+        <div className="mb-6 rounded-2xl border-2 border-kiosk-coral/30 bg-kiosk-coral/5 p-5 mk-rise">
+          {/* Progress dots */}
+          <div className="flex items-center gap-2 mb-4">
+            {VOICE_FIELDS.map((f) => (
+              <div key={f} className={`flex-1 h-1.5 rounded-full transition-all ${
+                f === voiceField ? "bg-kiosk-coral" :
+                VOICE_FIELDS.indexOf(f) < VOICE_FIELDS.indexOf(voiceField) ? "bg-kiosk-teal" : "bg-border"
+              }`} />
+            ))}
+          </div>
+
+          {/* Prompt */}
+          <p className="text-xs font-black uppercase tracking-[0.15em] text-kiosk-coral/70 mb-1">
+            🎙 {t(VOICE_FIELD_HINT[voiceField])}
+          </p>
+          <p className="text-base font-bold text-kiosk-navy leading-snug">
+            {t(VOICE_FIELD_PROMPTS[voiceField])}
+          </p>
+
+          {/* Error */}
+          {voiceError && (
+            <div className="mt-3 flex items-center gap-2 rounded-xl bg-kiosk-yellow/20 border border-kiosk-yellow/30 px-3 py-2 text-xs font-bold text-kiosk-navy">
+              <AlertTriangle size={14} className="text-kiosk-yellow shrink-0" /> {voiceError}
+            </div>
+          )}
+
+          {/* Mic button */}
+          <div className="mt-4 flex items-center gap-4">
+            <button
+              onClick={() => listenForField(voiceField)}
+              disabled={fieldState === "listening" || fieldState === "processing"}
+              aria-label="Speak answer"
+              className={`mk-mic size-14 shrink-0 rounded-full text-white flex items-center justify-center shadow-xl transition-all disabled:opacity-60 ${
+                fieldState === "listening"
+                  ? "bg-kiosk-coral ring-8 ring-kiosk-coral/25 scale-110"
+                  : "bg-kiosk-coral shadow-kiosk-coral/30 hover:scale-105"
+              }`}
+            >
+              <Mic size={24} />
+            </button>
+            <div>
+              <p className="text-sm font-black text-kiosk-navy">
+                {fieldState === "listening" ? t("Listening…") :
+                 fieldState === "processing" ? t("Understanding…") :
+                 fieldState === "result" ? t("Got it") :
+                 t("Tap mic or type below")}
+              </p>
+              <p className="text-[10px] font-medium text-foreground/45 mt-0.5">
+                {lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Bhashini · हिन्दी" : "🎙 Bhashini · ગુજરાતી"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Completion banner in voice mode */}
+      {isVoice && voiceField === "done" && (
+        <div className="mb-5 flex items-center gap-3 rounded-2xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-4 py-3 mk-rise">
+          <CheckCircle2 size={22} className="text-kiosk-teal shrink-0" />
+          <div>
+            <p className="text-sm font-black text-kiosk-navy">{t("Got it")}</p>
+            <p className="text-xs font-medium text-foreground/55">Check your details below and tap Continue.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Saved-field confirmation badges */}
+      {isVoice && savedField && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(["name", "age", "gender", "complaint"] as VoiceField[]).map((f) => {
+            const val = f === "name" ? details.name : f === "age" ? details.age : f === "gender" ? details.gender : details.complaint;
+            if (!val) return null;
+            const idx = VOICE_FIELDS.indexOf(f);
+            const currentIdx = voiceField === "done" ? 4 : VOICE_FIELDS.indexOf(voiceField);
+            if (idx >= currentIdx && savedField !== f) return null;
+            return (
+              <span key={f} className="flex items-center gap-1.5 rounded-full bg-kiosk-teal/10 border border-kiosk-teal/20 px-3 py-1 text-xs font-bold text-kiosk-teal">
+                <Check size={11} strokeWidth={3} /> {t(f === "name" ? "Your name" : f === "age" ? "Your age" : f === "gender" ? "I am" : "Main problem")}: {f === "complaint" ? t(val) : f === "gender" ? t(val) : val}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Always-visible touch form (editable in both modes) ─────────────── */}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="text-xs font-black uppercase tracking-wide text-foreground/50">
           {t("Your name")}
-          <Input value={details.name} onChange={(e) => setDetails((d) => ({ ...d, name: e.target.value }))} placeholder={t("Type your name")} className="mt-2 min-h-14 rounded-2xl bg-white border-border/60 text-lg font-medium focus-visible:ring-kiosk-teal" />
+          <Input
+            value={details.name}
+            onChange={(e) => setDetails((d) => ({ ...d, name: e.target.value }))}
+            placeholder={isVoice ? t("Say your name") : t("Type your name")}
+            className="mt-2 min-h-14 rounded-2xl bg-white border-border/60 text-lg font-medium focus-visible:ring-kiosk-teal"
+          />
         </label>
         <label className="text-xs font-black uppercase tracking-wide text-foreground/50">
           {t("Your age")}
-          <Input inputMode="numeric" value={details.age} onChange={(e) => setDetails((d) => ({ ...d, age: e.target.value }))} placeholder={t("Example: 52")} className="mt-2 min-h-14 rounded-2xl bg-white border-border/60 text-lg font-medium focus-visible:ring-kiosk-teal" />
+          <Input
+            inputMode="numeric"
+            value={details.age}
+            onChange={(e) => setDetails((d) => ({ ...d, age: e.target.value }))}
+            placeholder={isVoice ? t("Say your age") : t("Example: 52")}
+            className="mt-2 min-h-14 rounded-2xl bg-white border-border/60 text-lg font-medium focus-visible:ring-kiosk-teal"
+          />
         </label>
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-foreground/50 mb-2">{t("I am")}</p>
           <div className="grid grid-cols-3 gap-2">
             {["Male", "Female", "Other"].map((item) => (
-              <Button key={item} variant={details.gender === item ? "default" : "outline"} onClick={() => setDetails((d) => ({ ...d, gender: item }))}
-                className={`min-h-12 rounded-2xl text-sm font-bold transition-all ${details.gender === item ? "bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90" : "bg-white border-border/60 text-kiosk-navy hover:border-kiosk-teal/40 hover:bg-kiosk-teal/5"}`}>
+              <Button
+                key={item}
+                variant={details.gender === item ? "default" : "outline"}
+                onClick={() => setDetails((d) => ({ ...d, gender: item }))}
+                className={`min-h-12 rounded-2xl text-sm font-bold transition-all ${
+                  details.gender === item
+                    ? "bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90"
+                    : "bg-white border-border/60 text-kiosk-navy hover:border-kiosk-teal/40 hover:bg-kiosk-teal/5"
+                }`}>
                 {t(item)}
               </Button>
             ))}
@@ -937,8 +1235,15 @@ function PatientDetails({ t, details, setDetails, onBack, onContinue }: { t: T; 
             {Object.keys(interviewQuestions).map((item) => {
               const Icon = iconMap[item as Complaint];
               return (
-                <Button key={item} variant={details.complaint === item ? "default" : "outline"} onClick={() => setDetails((d) => ({ ...d, complaint: item as Complaint }))}
-                  className={`min-h-12 justify-start rounded-2xl px-3 text-xs font-bold transition-all ${details.complaint === item ? "bg-kiosk-coral text-white shadow-lg shadow-kiosk-coral/25 hover:bg-kiosk-coral/90" : "bg-white border-border/60 text-kiosk-navy hover:border-kiosk-coral/30 hover:bg-kiosk-coral/5"}`}>
+                <Button
+                  key={item}
+                  variant={details.complaint === item ? "default" : "outline"}
+                  onClick={() => setDetails((d) => ({ ...d, complaint: item as Complaint }))}
+                  className={`min-h-12 justify-start rounded-2xl px-3 text-xs font-bold transition-all ${
+                    details.complaint === item
+                      ? "bg-kiosk-coral text-white shadow-lg shadow-kiosk-coral/25 hover:bg-kiosk-coral/90"
+                      : "bg-white border-border/60 text-kiosk-navy hover:border-kiosk-coral/30 hover:bg-kiosk-coral/5"
+                  }`}>
                   <Icon size={16} />{t(item)}
                 </Button>
               );

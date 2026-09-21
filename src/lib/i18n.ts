@@ -195,6 +195,30 @@ const hi: Dict = {
 
   Back: "पीछे",
   Continue: "आगे बढ़ें",
+
+  // Exit session
+  "Exit Session": "सत्र समाप्त करें",
+  "Are you sure you want to exit?": "क्या आप वाकई बाहर जाना चाहते हैं?",
+  "All your information will be cleared and the kiosk will reset for the next patient.":
+    "आपकी सभी जानकारी मिट जाएगी और कियोस्क अगले मरीज़ के लिए रीसेट हो जाएगा।",
+  "Yes, exit now": "हाँ, अभी बाहर जाएं",
+  "No, go back": "नहीं, वापस जाएं",
+
+  // Voice-fill details
+  "Please say your full name.": "कृपया अपना पूरा नाम बोलें।",
+  "Please say your age in years.": "कृपया अपनी उम्र साल में बोलें।",
+  "Please say Male, Female, or Other.": "कृपया पुरुष, महिला, या अन्य बोलें।",
+  "Please say your main problem — Fever, Abdominal pain, Headache, Cough, or Chest pain.":
+    "कृपया अपनी मुख्य समस्या बोलें — बुखार, पेट दर्द, सिर दर्द, खाँसी, या छाती दर्द।",
+  "Name saved": "नाम सहेजा",
+  "Age saved": "उम्र सहेजी",
+  "Gender saved": "लिंग सहेजा",
+  "Complaint saved": "समस्या सहेजी",
+  "Say your name": "अपना नाम बोलें",
+  "Say your age": "अपनी उम्र बोलें",
+  "Say Male, Female, or Other": "पुरुष, महिला, या अन्य बोलें",
+  "Say your main problem": "अपनी मुख्य समस्या बोलें",
+  "Tap mic or type below": "माइक दबाएँ या नीचे लिखें",
 };
 
 const gu: Dict = {
@@ -383,6 +407,30 @@ const gu: Dict = {
 
   Back: "પાછળ",
   Continue: "આગળ વધો",
+
+  // Exit session
+  "Exit Session": "સત્ર સમાપ્ત કરો",
+  "Are you sure you want to exit?": "શું તમે ખરેખર બહાર જવા માંગો છો?",
+  "All your information will be cleared and the kiosk will reset for the next patient.":
+    "તમારી બધી માહિતી ભૂંસાઈ જશે અને કિઓસ્ક આગળના દર્દી માટે રીસેટ થશે.",
+  "Yes, exit now": "હા, હવે બહાર જાઓ",
+  "No, go back": "ના, પાછળ જાઓ",
+
+  // Voice-fill details
+  "Please say your full name.": "કૃપા કરીને તમારું પૂરું નામ બોલો.",
+  "Please say your age in years.": "કૃપા કરીને તમારી ઉંમર વર્ષોમાં બોલો.",
+  "Please say Male, Female, or Other.": "કૃપા કરીને પુરુષ, સ્ત્રી, અથવા અન્ય બોલો.",
+  "Please say your main problem — Fever, Abdominal pain, Headache, Cough, or Chest pain.":
+    "કૃપા કરીને તમારી મુખ્ય તકલીફ બોલો — તાવ, પેટ દુખાવો, માથાનો દુખાવો, ઉધરસ, અથવા છાતી દુખાવો.",
+  "Name saved": "નામ સહેજ થયું",
+  "Age saved": "ઉંમર સહેજ થઈ",
+  "Gender saved": "જાતિ સહેજ થઈ",
+  "Complaint saved": "તકલીફ સહેજ થઈ",
+  "Say your name": "તમારું નામ બોલો",
+  "Say your age": "તમારી ઉંમર બોલો",
+  "Say Male, Female, or Other": "પુરુષ, સ્ત્રી, અથવા અન્ય બોલો",
+  "Say your main problem": "તમારી મુખ્ય તકલીફ બોલો",
+  "Tap mic or type below": "માઇક દબાવો અથવા નીચે લખો",
 };
 
 const questionsHi: Dict = {
