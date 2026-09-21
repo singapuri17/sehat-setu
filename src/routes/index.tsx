@@ -1748,6 +1748,10 @@ function Success({ t, name, sessionId, onSummary, onDoctor, onNewPatient }: {
 // ─── Doctor Shell ─────────────────────────────────────────────────────────────
 
 function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selectedCase }: { view: View; setView: (view: View) => void; selectedPatient: string; setSelectedPatient: (token: string) => void; selectedCase: typeof demoConsultation }) {
+  // Sub-view within the doctor shell (independent of the main patient view routing)
+  const [navView, setNavView] = useState<"queue" | "today" | "settings">("queue");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   if (view === "doctorLogin") return (
     <div className="min-h-screen bg-[linear-gradient(160deg,oklch(0.96_0.04_175/0.3)_0%,oklch(0.99_0.005_200)_100%)] p-5 sm:p-10">
       <div className="mx-auto flex min-h-[80vh] max-w-md items-center">
@@ -1777,35 +1781,92 @@ function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selec
     </div>
   );
 
+  // Map nav label → navView key
+  const navMap: Record<string, () => void> = {
+    "Dashboard":      () => { setNavView("queue");    setView("dashboard"); setSidebarOpen(false); },
+    "Patient queue":  () => { setNavView("queue");    setView("dashboard"); setSidebarOpen(false); },
+    "Today's cases":  () => { setNavView("today");    setView("dashboard"); setSidebarOpen(false); },
+    "Settings":       () => { setNavView("settings"); setView("dashboard"); setSidebarOpen(false); },
+  };
+  const activeLabel = view === "case" ? "" :
+    navView === "today" ? "Today's cases" :
+    navView === "settings" ? "Settings" : "Patient queue";
+
+  const headerTitle =
+    view === "case"         ? "Patient case" :
+    navView === "today"     ? "Today's cases" :
+    navView === "settings"  ? "Settings" :
+    "Patients ready for consultation";
+
+  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
+    <div className={`flex flex-col ${mobile ? "w-full" : "h-full"}`}>
+      <div className="flex items-center gap-3 border-b border-white/10 pb-5">
+        <img src="/logo.png" alt="MediKiosk logo" className="size-9 rounded-xl object-contain" />
+        <div>
+          <p className="text-base font-black">MediKiosk</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Physician desk</p>
+        </div>
+        {mobile && (
+          <button onClick={() => setSidebarOpen(false)} className="ml-auto text-white/40 hover:text-white" aria-label="Close menu">
+            <X size={20} />
+          </button>
+        )}
+      </div>
+      <nav className="mt-5 flex-1 space-y-1">
+        {doctorNavItems.map(({ label, Icon }) => (
+          <button
+            key={label}
+            onClick={navMap[label]}
+            className={`flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold transition-all ${
+              activeLabel === label
+                ? "bg-kiosk-teal/20 text-emerald-300 border border-kiosk-teal/20"
+                : "text-white/50 hover:bg-white/8 hover:text-white"
+            }`}
+          >
+            <Icon size={17} />{label}
+          </button>
+        ))}
+      </nav>
+      <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-3 text-xs font-medium text-white/35">
+        Demo data only. Verify with patient.
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[linear-gradient(160deg,oklch(0.96_0.04_175/0.2)_0%,oklch(0.99_0.005_200)_100%)] text-foreground">
       <div className="flex min-h-screen">
+
+        {/* Desktop sidebar */}
         <aside className="hidden w-60 shrink-0 border-r border-kiosk-teal/20 bg-kiosk-navy text-white lg:flex lg:flex-col p-5">
-          <div className="flex items-center gap-3 border-b border-white/10 pb-5">
-            <img src="/logo.png" alt="MediKiosk logo" className="size-9 rounded-xl object-contain" />
-            <div>
-              <p className="text-base font-black">MediKiosk</p>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Physician desk</p>
-            </div>
-          </div>
-          <nav className="mt-5 flex-1 space-y-1">
-            {doctorNavItems.map(({ label, Icon }) => (
-              <button key={label} className={`flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold transition-all ${label === "Patient queue" ? "bg-kiosk-teal/20 text-emerald-300 border border-kiosk-teal/20" : "text-white/50 hover:bg-white/8 hover:text-white"}`} onClick={() => setView("dashboard")}>
-                <Icon size={17} />{label}
-              </button>
-            ))}
-          </nav>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-3 text-xs font-medium text-white/35">
-            Demo data only. Verify with patient.
-          </div>
+          <Sidebar />
         </aside>
+
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <aside className="absolute left-0 top-0 bottom-0 w-64 bg-kiosk-navy text-white p-5 shadow-2xl flex flex-col">
+              <Sidebar mobile />
+            </aside>
+          </div>
+        )}
+
         <div className="min-w-0 flex-1">
           <header className="flex min-h-16 items-center justify-between border-b border-border/50 bg-white/80 px-5 backdrop-blur-sm sm:px-7">
             <div className="flex items-center gap-3">
-              <Button size="icon" variant="ghost" className="lg:hidden" aria-label="Open menu"><Menu /></Button>
+              {/* Mobile menu button — now functional */}
+              <Button
+                size="icon" variant="ghost"
+                className="lg:hidden"
+                aria-label="Open menu"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu size={20} />
+              </Button>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-kiosk-teal">Physician workspace</p>
-                <h1 className="text-lg font-black text-kiosk-navy">{view === "case" ? "Patient case" : "Patients ready for consultation"}</h1>
+                <h1 className="text-lg font-black text-kiosk-navy">{headerTitle}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1813,12 +1874,158 @@ function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selec
               <div className="grid size-9 place-items-center rounded-full bg-kiosk-teal text-white font-black text-sm shadow-lg">MR</div>
             </div>
           </header>
+
           <main className="p-5 sm:p-7">
-            {view === "dashboard"
-              ? <DoctorDashboard selectedPatient={selectedPatient} setSelectedPatient={setSelectedPatient} setView={setView} />
-              : <CaseView selectedCase={selectedCase} onBack={() => setView("dashboard")} />}
+            {view === "case" ? (
+              <CaseView selectedCase={selectedCase} onBack={() => setView("dashboard")} />
+            ) : navView === "today" ? (
+              <TodaysCasesView onOpenCase={(token) => { setSelectedPatient(token); setView("case"); }} />
+            ) : navView === "settings" ? (
+              <DoctorSettingsView />
+            ) : (
+              <DoctorDashboard selectedPatient={selectedPatient} setSelectedPatient={setSelectedPatient} setView={setView} />
+            )}
           </main>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Today's Cases View ───────────────────────────────────────────────────────
+
+function TodaysCasesView({ onOpenCase }: { onOpenCase: (token: string) => void }) {
+  // All patients who have gone through any stage today
+  const allToday = [
+    ...demoPatients,
+    { token: "A-101", name: "Priya Mehta",   age: "29", gender: "Female", complaint: "Fever",        status: "Verified" as const, submitted: "08:55" },
+    { token: "A-100", name: "Suresh Kumar",  age: "71", gender: "Male",   complaint: "Chest pain",   status: "Verified" as const, submitted: "08:30" },
+  ];
+  const stats = {
+    verified:   allToday.filter((p) => p.status === "Verified").length,
+    inReview:   allToday.filter((p) => p.status === "In review").length,
+    ready:      allToday.filter((p) => p.status === "Ready").length,
+  };
+  return (
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Metric icon={<BadgeCheck />} label="Verified today"  value={String(stats.verified)}  tone="teal" />
+        <Metric icon={<RefreshCw />}  label="In review"       value={String(stats.inReview)}  tone="sky"  />
+        <Metric icon={<Bell />}       label="Ready / waiting" value={String(stats.ready)}     tone="coral" />
+      </div>
+      <div>
+        <h2 className="mb-3 text-xl font-black text-kiosk-navy">All cases today</h2>
+        <div className="space-y-3">
+          {allToday.map((patient) => (
+            <button key={patient.token} onClick={() => onOpenCase(patient.token)}
+              className="w-full flex flex-col gap-3 rounded-2xl border bg-white/90 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-kiosk-teal/30 sm:flex-row sm:items-center border-border/60">
+              <span className="grid size-11 place-items-center rounded-xl bg-kiosk-coral/10 text-base font-black text-kiosk-coral">{patient.token.split("-")[1]}</span>
+              <span className="min-w-32 flex-1">
+                <span className="block text-base font-black text-kiosk-navy">{patient.name}</span>
+                <span className="block text-xs font-medium text-foreground/50">{patient.age}y · {patient.gender} · {patient.submitted}</span>
+              </span>
+              <span className="flex-1 text-sm font-bold text-foreground/65">{patient.complaint}</span>
+              <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                patient.status === "Verified"  ? "bg-kiosk-teal/15 text-kiosk-teal border border-kiosk-teal/20" :
+                patient.status === "Ready"     ? "bg-kiosk-green/15 text-kiosk-green border border-kiosk-green/20" :
+                                                  "bg-kiosk-yellow/20 text-kiosk-navy border border-kiosk-yellow/30"
+              }`}>{patient.status}</span>
+              <ChevronRight className="hidden text-foreground/25 sm:block" size={18} />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Doctor Settings View ─────────────────────────────────────────────────────
+
+function DoctorSettingsView() {
+  const [notifs, setNotifs] = useState(true);
+  const [autosave, setAutosave] = useState(true);
+  const [redFlag, setRedFlag] = useState(true);
+  const [fontSize, setFontSize] = useState<"normal" | "large">("normal");
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div>
+        <h2 className="text-2xl font-black text-kiosk-navy">Settings</h2>
+        <p className="mt-1 text-sm font-medium text-foreground/50">Physician workspace preferences · Demo mode</p>
+      </div>
+
+      {/* Profile */}
+      <div className="rounded-2xl border border-border/50 bg-white/90 p-5 shadow-sm space-y-4">
+        <h3 className="text-base font-black text-kiosk-navy">Profile</h3>
+        <div className="flex items-center gap-4">
+          <div className="grid size-14 place-items-center rounded-full bg-kiosk-teal text-white font-black text-lg shadow-lg">MR</div>
+          <div>
+            <p className="text-base font-black text-kiosk-navy">Dr. M. Rao</p>
+            <p className="text-xs font-medium text-foreground/50">doctor@medikiosk.demo · General Physician</p>
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { label: "Full name",    value: "Dr. Meera Rao" },
+            { label: "Speciality",   value: "General Physician" },
+            { label: "Department",   value: "OPD — Block A" },
+            { label: "Employee ID",  value: "HOS-DOC-0042" },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <p className="text-[10px] font-black uppercase tracking-wide text-foreground/40">{label}</p>
+              <input defaultValue={value} className="mt-1 w-full rounded-xl border border-border/50 bg-white px-3 py-2 text-sm font-medium text-kiosk-navy focus:outline-none focus:ring-2 focus:ring-kiosk-teal/30" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Notifications & preferences */}
+      <div className="rounded-2xl border border-border/50 bg-white/90 p-5 shadow-sm space-y-4">
+        <h3 className="text-base font-black text-kiosk-navy">Preferences</h3>
+        {[
+          { label: "Patient ready notifications", desc: "Alert when a new patient completes intake", value: notifs,   set: setNotifs },
+          { label: "Auto-save edits",             desc: "Save field changes automatically after 3s",  value: autosave, set: setAutosave },
+          { label: "Red-flag alerts",             desc: "Highlight potential red-flag symptoms",       value: redFlag,  set: setRedFlag },
+        ].map(({ label, desc, value, set }) => (
+          <div key={label} className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold text-kiosk-navy">{label}</p>
+              <p className="text-xs font-medium text-foreground/45">{desc}</p>
+            </div>
+            <button
+              onClick={() => set((v) => !v)}
+              aria-pressed={value}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kiosk-teal ${value ? "bg-kiosk-teal" : "bg-border"}`}
+            >
+              <span className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${value ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+        ))}
+
+        {/* Font size */}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-kiosk-navy">Text size</p>
+            <p className="text-xs font-medium text-foreground/45">Adjust reading comfort</p>
+          </div>
+          <div className="flex gap-2">
+            {(["normal", "large"] as const).map((s) => (
+              <button key={s} onClick={() => setFontSize(s)}
+                className={`rounded-xl px-3 py-1.5 text-xs font-black transition-all ${fontSize === s ? "bg-kiosk-teal text-white" : "border border-border/50 text-foreground/50 hover:border-kiosk-teal/40"}`}>
+                {s === "normal" ? "Normal" : "Large"}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Save button */}
+      <Button className="min-h-12 w-full rounded-2xl bg-kiosk-teal font-black text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90">
+        <Save size={18} /> Save preferences
+      </Button>
+
+      <div className="text-center text-xs font-medium text-foreground/35">
+        MediKiosk · Demo mode · Settings are not persisted between sessions
       </div>
     </div>
   );
@@ -1846,7 +2053,11 @@ function DoctorDashboard({ selectedPatient, setSelectedPatient, setView }: { sel
               <span className="block text-xs font-medium text-foreground/50">{patient.age}y · {patient.gender} · {patient.submitted}</span>
             </span>
             <span className="flex-1 text-sm font-bold text-foreground/65">{patient.complaint}</span>
-            <span className={`rounded-full px-3 py-1 text-xs font-black ${patient.status === "Ready" ? "bg-kiosk-green/15 text-kiosk-green border border-kiosk-green/20" : "bg-kiosk-yellow/20 text-kiosk-navy border border-kiosk-yellow/30"}`}>{patient.status}</span>
+            <span className={`rounded-full px-3 py-1 text-xs font-black ${
+              patient.status === "Verified"  ? "bg-kiosk-teal/15 text-kiosk-teal border border-kiosk-teal/20" :
+              patient.status === "Ready"     ? "bg-kiosk-green/15 text-kiosk-green border border-kiosk-green/20" :
+                                               "bg-kiosk-yellow/20 text-kiosk-navy border border-kiosk-yellow/30"
+            }`}>{patient.status}</span>
             <ChevronRight className="hidden text-foreground/25 sm:block" size={18} />
           </button>
         ))}
@@ -1868,36 +2079,95 @@ function Metric({ icon, label, value, tone }: { icon: React.ReactNode; label: st
 
 function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultation; onBack: () => void }) {
   const [verified, setVerified] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  // Local editable copy of the case fields
+  const [draft, setDraft] = useState({
+    complaint:      selectedCase.complaint,
+    history:        selectedCase.history,
+    pastHistory:    "Type 2 Diabetes — uploaded record",
+    medications:    selectedCase.medications.join(", "),
+    allergies:      selectedCase.allergies,
+    investigations: selectedCase.investigations.join(", "),
+  });
+  // Reset draft when selectedCase changes (switching patients)
+  useEffect(() => {
+    setDraft({
+      complaint:      selectedCase.complaint,
+      history:        selectedCase.history,
+      pastHistory:    "Type 2 Diabetes — uploaded record",
+      medications:    selectedCase.medications.join(", "),
+      allergies:      selectedCase.allergies,
+      investigations: selectedCase.investigations.join(", "),
+    });
+    setVerified(false);
+    setIsEditing(false);
+  }, [selectedCase.token]);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const field = (key: keyof typeof draft) => ({
+    text:    draft[key],
+    editing: isEditing,
+    onEdit:  (val: string) => setDraft((d) => ({ ...d, [key]: val })),
+  });
+
   return (
     <div className="mx-auto max-w-5xl">
       <Button variant="ghost" onClick={onBack} className="mb-4 min-h-10 px-0 font-bold text-kiosk-navy hover:text-kiosk-teal">
         <ArrowLeft size={18} /> Back to queue
       </Button>
+
+      {/* Header */}
       <div className="flex flex-col justify-between gap-4 border-b border-border/50 pb-5 sm:flex-row sm:items-end">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-kiosk-coral">Token {selectedCase.token}</p>
           <h2 className="mt-1 text-3xl font-black text-kiosk-navy">{selectedCase.name}</h2>
-          <p className="mt-1 text-sm font-medium text-foreground/50">{selectedCase.age}y · {selectedCase.gender} · {selectedCase.complaint} · {selectedCase.submitted}</p>
+          <p className="mt-1 text-sm font-medium text-foreground/50">{selectedCase.age}y · {selectedCase.gender} · {draft.complaint} · {selectedCase.submitted}</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="min-h-11 rounded-xl bg-white font-bold text-kiosk-navy border-border/60"><Pencil size={16} /> Edit</Button>
-          <Button onClick={() => setVerified(true)} className="min-h-11 rounded-xl bg-kiosk-teal font-bold text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90"><Save size={16} /> {verified ? "Saved" : "Verify & save"}</Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing((e) => !e)}
+            className={`min-h-11 rounded-xl font-bold transition-all ${isEditing ? "border-kiosk-teal bg-kiosk-teal/10 text-kiosk-teal hover:bg-kiosk-teal/20" : "bg-white border-border/60 text-kiosk-navy hover:border-kiosk-teal/40"}`}
+          >
+            {isEditing ? <><Check size={16} /> Done editing</> : <><Pencil size={16} /> Edit</>}
+          </Button>
+          <Button
+            onClick={() => { setVerified(true); setIsEditing(false); }}
+            disabled={verified}
+            className="min-h-11 rounded-xl bg-kiosk-teal font-bold text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90 disabled:opacity-60"
+          >
+            <Save size={16} /> {verified ? "Verified ✓" : "Verify & save"}
+          </Button>
         </div>
       </div>
-      {verified && <div className="mt-4 flex items-center gap-2 rounded-xl bg-kiosk-green/12 border border-kiosk-green/20 px-4 py-3 text-sm font-bold text-kiosk-green"><BadgeCheck size={18} /> Case marked verified.</div>}
+
+      {/* Edit mode banner */}
+      {isEditing && (
+        <div className="mt-4 flex items-center gap-2 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-4 py-3 text-sm font-bold text-kiosk-teal">
+          <Pencil size={16} /> Click any field below to edit. Press "Done editing" when finished.
+        </div>
+      )}
+      {verified && (
+        <div className="mt-4 flex items-center gap-2 rounded-xl bg-kiosk-green/12 border border-kiosk-green/20 px-4 py-3 text-sm font-bold text-kiosk-green">
+          <BadgeCheck size={18} /> Case verified and saved.
+        </div>
+      )}
+
+      {/* Two-column layout */}
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-4">
           <Attention items={selectedCase.attention} />
-          <Section title="Chief complaint" icon={<UserRound size={16} />} text={selectedCase.complaint} source="🎤 Patient interview" />
-          <Section title="History of present illness" icon={<HeartPulse size={16} />} text={selectedCase.history} source="🎤 Patient interview" draft />
+          <Section title="Chief complaint"            icon={<UserRound size={16} />}    source="🎤 Patient interview" {...field("complaint")} />
+          <Section title="History of present illness" icon={<HeartPulse size={16} />}   source="🎤 Patient interview" draft {...field("history")} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Section title="Past medical history" icon={<ClipboardList size={16} />} text="Type 2 Diabetes — uploaded record" source="📄 Uploaded document" />
-            <Section title="Medications" icon={<Activity size={16} />} text={selectedCase.medications.join(", ")} source="📄 Uploaded document" />
+            <Section title="Past medical history"     icon={<ClipboardList size={16} />} source="📄 Uploaded document" {...field("pastHistory")} />
+            <Section title="Medications"              icon={<Activity size={16} />}      source="📄 Uploaded document" {...field("medications")} />
           </div>
-          <Section title="Allergies" icon={<AlertTriangle size={16} />} text={selectedCase.allergies} source="Patient review" />
-          <Section title="Previous investigations" icon={<BarChart3 size={16} />} text={selectedCase.investigations.join(", ")} source="📄 Uploaded document" />
+          <Section title="Allergies"                  icon={<AlertTriangle size={16} />} source="Patient review"       {...field("allergies")} />
+          <Section title="Previous investigations"    icon={<BarChart3 size={16} />}     source="📄 Uploaded document" {...field("investigations")} />
         </div>
+
         <div className="space-y-4">
+          {/* Medical documents */}
           <div className="rounded-2xl border border-border/50 bg-white/90 p-4 shadow-sm">
             <h3 className="flex items-center gap-2 text-base font-black text-kiosk-navy"><FileText size={18} className="text-kiosk-coral" /> Medical documents</h3>
             <div className="mt-3 space-y-2">
@@ -1908,6 +2178,8 @@ function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultat
               ))}
             </div>
           </div>
+
+          {/* Timeline */}
           <div className="rounded-2xl border border-border/50 bg-white/90 p-4 shadow-sm">
             <h3 className="flex items-center gap-2 text-base font-black text-kiosk-navy"><Clock3 size={18} className="text-kiosk-coral" /> Timeline</h3>
             <div className="relative mt-4 space-y-4 pl-5 before:absolute before:bottom-2 before:left-[6px] before:top-2 before:w-0.5 before:bg-kiosk-teal/20">
@@ -1920,10 +2192,14 @@ function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultat
               ))}
             </div>
           </div>
+
+          {/* AI summary */}
           <div className="rounded-2xl border border-kiosk-teal/20 bg-kiosk-teal/5 p-4">
             <h3 className="flex items-center gap-2 text-base font-black text-kiosk-navy"><Brain size={18} className="text-kiosk-teal" /> AI summary</h3>
-            <p className="mt-2 text-xs font-medium leading-relaxed text-foreground/60">Draft only — ready for physician verification.</p>
-            <p className="mt-3 text-[10px] font-black text-kiosk-coral">AI draft — verification required.</p>
+            <p className="mt-2 text-sm font-medium leading-relaxed text-foreground/60">
+              {draft.complaint} — {draft.history.slice(0, 80)}{draft.history.length > 80 ? "…" : ""}
+            </p>
+            <p className="mt-3 text-[10px] font-black text-kiosk-coral">AI draft — physician verification required.</p>
           </div>
         </div>
       </div>
@@ -1940,14 +2216,28 @@ function Attention({ items }: { items: string[] }) {
   );
 }
 
-function Section({ title, icon, text, source, draft = false }: { title: string; icon: React.ReactNode; text: string; source: string; draft?: boolean }) {
+function Section({ title, icon, text, source, draft = false, editing = false, onEdit }: {
+  title: string; icon: React.ReactNode; text: string; source: string;
+  draft?: boolean; editing?: boolean; onEdit?: (val: string) => void;
+}) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-white/90 p-4 shadow-sm">
+    <div className={`rounded-2xl border bg-white/90 p-4 shadow-sm transition-all ${editing ? "border-kiosk-teal/40 ring-2 ring-kiosk-teal/15" : "border-border/50"}`}>
       <h3 className="flex items-center gap-2 text-sm font-black text-kiosk-navy">{icon}{title}</h3>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-foreground/65">{text}</p>
+      {editing && onEdit ? (
+        <textarea
+          value={text}
+          onChange={(e) => onEdit(e.target.value)}
+          rows={3}
+          autoFocus
+          className="mt-2 w-full resize-none rounded-xl border border-kiosk-teal/30 bg-kiosk-teal/3 p-2.5 text-sm font-medium leading-relaxed text-foreground focus:outline-none focus:ring-2 focus:ring-kiosk-teal/30"
+        />
+      ) : (
+        <p className="mt-2 text-sm font-medium leading-relaxed text-foreground/65">{text}</p>
+      )}
       <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-black text-kiosk-teal">
         <span>{source}</span>
         {draft && <span className="rounded-full bg-kiosk-yellow/25 border border-kiosk-yellow/30 px-2 py-0.5 text-kiosk-navy">AI draft</span>}
+        {editing && <span className="rounded-full bg-kiosk-teal/15 border border-kiosk-teal/20 px-2 py-0.5 text-kiosk-teal">Editing</span>}
       </div>
     </div>
   );
