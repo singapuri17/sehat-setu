@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { extractDocument, type ExtractedInformation } from "@/lib/documentService";
 import { speechToText, type SpeechState } from "@/lib/speechService";
+import { speak, cancelSpeech } from "@/lib/ttsService";
 import { languageOptions, makeT, type T, type Lang } from "@/lib/i18n";
 import { demoConsultation } from "@/lib/consultationService";
 import { demoPatients } from "@/lib/patientService";
@@ -245,7 +246,7 @@ function MediKiosk() {
         setPendingVoice(null);
         // Speak confirmation in voice mode
         if (inputMode === "voice") {
-          await speakText(`${t("Selected")}: ${t(matched)}`, lang);
+          await speak(`${t("Selected")}: ${t(matched)}`, lang);
         }
       } else {
         // No match — hold for user confirmation
@@ -635,9 +636,9 @@ function Consent({ t, lang, inputMode, consent, setConsent, onBack, onContinue }
   // Auto-speak in voice mode when page loads
   useEffect(() => {
     if (inputMode === "voice") {
-      speakText(consentText, lang);
+      speak(consentText, lang);
     }
-    return () => { window.speechSynthesis?.cancel(); };
+    return () => { cancelSpeech(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -655,7 +656,7 @@ function Consent({ t, lang, inputMode, consent, setConsent, onBack, onContinue }
           <p className="text-base font-black text-kiosk-navy">{t("Listen")}</p>
           <Button
             variant="outline"
-            onClick={() => speakText(consentText, lang)}
+            onClick={() => speak(consentText, lang)}
             className="mt-3 min-h-11 w-full rounded-xl border-kiosk-sky/30 bg-white text-sm font-bold text-kiosk-navy hover:bg-kiosk-sky/10"
           >
             <Volume2 size={16} /> {t("Hear this")}
@@ -947,65 +948,8 @@ function PatientDetails({ t, details, setDetails, onBack, onContinue }: { t: T; 
 }
 
 // ─── TTS helper ──────────────────────────────────────────────────────────────
-
-const TTS_LANG: Record<Lang, string[]> = {
-  en: ["en-IN", "en-US", "en-GB"],
-  hi: ["hi-IN", "hi"],
-  gu: ["gu-IN", "gu", "hi-IN", "hi"], // gu-IN often missing; fall back to Hindi
-};
-
-/** Pick the best available voice for a language, falling back gracefully. */
-function pickVoice(langCandidates: string[]): SpeechSynthesisVoice | null {
-  const voices = window.speechSynthesis?.getVoices() ?? [];
-  for (const candidate of langCandidates) {
-    const exact = voices.find((v) => v.lang === candidate);
-    if (exact) return exact;
-    const prefix = voices.find((v) => v.lang.startsWith(candidate.split("-")[0]!));
-    if (prefix) return prefix;
-  }
-  return null;
-}
-
-/**
- * Speak `text` in `lang`.
- * Gujarati falls back to Hindi voice if gu-IN is not installed.
- * Always resolves (never rejects) so callers can await safely.
- */
-function speakText(text: string, lang: Lang): Promise<void> {
-  return new Promise((resolve) => {
-    if (!window.speechSynthesis) { resolve(); return; }
-    window.speechSynthesis.cancel();
-
-    const utt = new SpeechSynthesisUtterance(text);
-    const candidates = TTS_LANG[lang] ?? TTS_LANG["en"];
-
-    // Voices may not be loaded yet — try once after a short delay if empty
-    const trySpeak = () => {
-      const voice = pickVoice(candidates);
-      if (voice) {
-        utt.voice = voice;
-        utt.lang = voice.lang;
-      } else {
-        utt.lang = candidates[0] ?? "en-IN";
-      }
-      utt.rate = 0.88;
-      utt.pitch = 1;
-      utt.onend = () => resolve();
-      utt.onerror = () => resolve();
-      window.speechSynthesis.speak(utt);
-    };
-
-    if (window.speechSynthesis.getVoices().length === 0) {
-      // Voices not loaded yet — wait for the event
-      const handler = () => { trySpeak(); window.speechSynthesis.removeEventListener("voiceschanged", handler); };
-      window.speechSynthesis.addEventListener("voiceschanged", handler);
-      // Safety timeout — speak anyway after 800ms even if event never fires
-      setTimeout(() => { window.speechSynthesis.removeEventListener("voiceschanged", handler); trySpeak(); }, 800);
-    } else {
-      trySpeak();
-    }
-  });
-}
+// speak(text, lang) and cancelSpeech() are imported from @/lib/ttsService.
+// en → Web Speech API; hi/gu → Bhashini Dhruva TTS with Web Speech fallback.
 
 /** Build a full spoken string: question + numbered options. */
 function buildSpokenQuestion(question: string, choices: string[] | undefined, t: T): string {
@@ -1042,11 +986,11 @@ function Interview({
     let cancelled = false;
     const run = async () => {
       const fullText = buildSpokenQuestion(t(currentQuestion.question), currentQuestion.choices, t);
-      await speakText(fullText, lang);
+      await speak(fullText, lang);
       if (!cancelled) startSpeech();
     };
     run();
-    return () => { cancelled = true; window.speechSynthesis?.cancel(); };
+    return () => { cancelled = true; cancelSpeech(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionIndex, isVoice]);
 
@@ -1184,14 +1128,16 @@ function Interview({
               : t("Tap the microphone and say your answer")}
           </p>
           <p className="mt-1 text-[10px] font-bold text-kiosk-teal/60">
-            {lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Bhashini · हिन्दी" : "🎙 Bhashini · ગુજરાતી"}
+            {lang === "en" ? "🎙 Web Speech · English" : lang === "hi" ? "🎙 Bhashini ASR · हिन्दी" : "🎙 Bhashini ASR · ગુજરાતી"}
+            {" · "}
+            {lang === "en" ? "TTS: Web Speech" : "TTS: Bhashini"}
           </p>
         </div>
 
         {/* Re-read button in voice mode */}
         {isVoice && (
           <button
-            onClick={() => speakText(fullSpokenText, lang)}
+            onClick={() => speak(fullSpokenText, lang)}
             className="shrink-0 rounded-xl border border-kiosk-teal/30 bg-white px-3 py-2 text-xs font-black text-kiosk-teal hover:bg-kiosk-teal/5 transition-colors"
             aria-label="Repeat question">
             <Volume2 size={16} />

@@ -1,13 +1,16 @@
 /**
  * speechService.ts
  *
- * Routing:
- *   English          → Web Speech API (browser built-in, en-IN)
+ * ASR routing:
+ *   English          → Web Speech API (en-IN)
+ *                      Falls back to OpenAI Whisper if Web Speech fails
  *   Hindi / Gujarati → Bhashini Dhruva ASR via /api/bhashini proxy
- *                      Falls back to Web Speech API if Bhashini fails
+ *                      Falls back to Web Speech API, then Whisper, on failure
  *
- * When the /api/bhashini proxy returns 503 (keys not set), it silently
- * falls back to Web Speech so the kiosk stays fully usable.
+ * When /api/bhashini returns 503 (keys not set), the kiosk degrades
+ * gracefully to Web Speech so it is always usable.
+ * When /api/whisper returns 503 (OPENAI_API_KEY not set), the last
+ * resort is the static FALLBACK strings.
  */
 
 export type SpeechState = "idle" | "listening" | "processing" | "result" | "error";
@@ -15,7 +18,7 @@ export type SpeechState = "idle" | "listening" | "processing" | "result" | "erro
 export interface SpeechResult {
   text: string;
   language: string;
-  source: "web-speech" | "bhashini" | "fallback";
+  source: "web-speech" | "bhashini" | "whisper" | "fallback";
 }
 
 // ─── Language maps ────────────────────────────────────────────────────────────
@@ -40,7 +43,7 @@ const FALLBACK: Record<string, string> = {
   gu: "મને ગઈકાલથી પેટમાં દુઃખાવો છે.",
 };
 
-// ─── MediaRecorder — capture audio blob for Bhashini ─────────────────────────
+// ─── MediaRecorder — capture audio blob for Bhashini / Whisper ───────────────
 
 function recordAudio(durationMs = 5000): Promise<Blob> {
   return new Promise(async (resolve, reject) => {
@@ -52,14 +55,18 @@ function recordAudio(durationMs = 5000): Promise<Blob> {
         : "audio/webm";
       const recorder = new MediaRecorder(stream, { mimeType });
 
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
       recorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
         resolve(new Blob(chunks, { type: mimeType }));
       };
       recorder.onerror = reject;
       recorder.start();
-      setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, durationMs);
+      setTimeout(() => {
+        if (recorder.state !== "inactive") recorder.stop();
+      }, durationMs);
     } catch (err) {
       reject(err);
     }
@@ -69,7 +76,8 @@ function recordAudio(durationMs = 5000): Promise<Blob> {
 async function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(",")[1] ?? "");
+    reader.onload = () =>
+      resolve((reader.result as string).split(",")[1] ?? "");
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
@@ -94,18 +102,48 @@ async function bhashiniASR(
   });
 
   if (!res.ok) {
-    const data = await res.json() as { error?: string };
+    const data = (await res.json()) as { error?: string };
     throw new Error(data.error ?? `Bhashini API error ${res.status}`);
   }
 
-  const data = await res.json() as {
+  const data = (await res.json()) as {
     pipelineResponse?: Array<{
       output?: Array<{ source?: string }>;
     }>;
   };
 
-  const text = data.pipelineResponse?.[0]?.output?.[0]?.source?.trim() ?? "";
+  const text =
+    data.pipelineResponse?.[0]?.output?.[0]?.source?.trim() ?? "";
   if (!text) throw new Error("Bhashini returned empty transcript");
+  return text;
+}
+
+// ─── OpenAI Whisper ASR ───────────────────────────────────────────────────────
+
+async function whisperASR(
+  audioBlob: Blob,
+  onStateChange?: (s: SpeechState) => void,
+): Promise<string> {
+  onStateChange?.("processing");
+
+  const formData = new FormData();
+  // Whisper accepts webm; name must have an extension it recognises
+  formData.append("file", audioBlob, "audio.webm");
+  formData.append("model", "whisper-1");
+
+  const res = await fetch("/api/whisper", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = (await res.json()) as { error?: string };
+    throw new Error(data.error ?? `Whisper API error ${res.status}`);
+  }
+
+  const data = (await res.json()) as { text?: string };
+  const text = data.text?.trim() ?? "";
+  if (!text) throw new Error("Whisper returned empty transcript");
   return text;
 }
 
@@ -117,8 +155,16 @@ function webSpeechASR(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const SpeechRecognition =
-      (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+      (
+        window as unknown as {
+          SpeechRecognition?: typeof window.SpeechRecognition;
+        }
+      ).SpeechRecognition ||
+      (
+        window as unknown as {
+          webkitSpeechRecognition?: typeof window.SpeechRecognition;
+        }
+      ).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       reject(new Error("Web Speech API not supported"));
@@ -132,11 +178,15 @@ function webSpeechASR(
     recognition.continuous = false;
 
     recognition.onstart = () => onStateChange?.("listening");
-    recognition.onspeechend = () => { onStateChange?.("processing"); recognition.stop(); };
+    recognition.onspeechend = () => {
+      onStateChange?.("processing");
+      recognition.stop();
+    };
     recognition.onresult = (e: SpeechRecognitionEvent) => {
       resolve(e.results[0]?.[0]?.transcript?.trim() ?? "");
     };
-    recognition.onerror = (e: SpeechRecognitionErrorEvent) => reject(new Error(e.error));
+    recognition.onerror = (e: SpeechRecognitionErrorEvent) =>
+      reject(new Error(e.error));
     recognition.onnomatch = () => reject(new Error("No speech recognized"));
     recognition.start();
   });
@@ -148,25 +198,46 @@ export async function speechToText(
   lang: string,
   onStateChange?: (s: SpeechState) => void,
 ): Promise<SpeechResult> {
-  // Normalise lang to code
+  // Normalise lang label to 2-letter code
   const code =
-    lang === "हिन्दी" ? "hi" :
-    lang === "ગુજરાતી" ? "gu" :
-    lang === "English" ? "en" :
-    lang.length === 2 ? lang : "en";
+    lang === "हिन्दी"
+      ? "hi"
+      : lang === "ગુજરાતી"
+        ? "gu"
+        : lang === "English"
+          ? "en"
+          : lang.length === 2
+            ? lang
+            : "en";
 
   try {
     onStateChange?.("listening");
 
-    // English → always Web Speech
+    // ── English: Web Speech → Whisper fallback ──────────────────────────────
     if (code === "en") {
-      const text = await webSpeechASR(WEB_SPEECH_LANG[code] ?? "en-IN", onStateChange);
-      if (!text) throw new Error("Empty transcript");
-      onStateChange?.("result");
-      return { text, language: code, source: "web-speech" };
+      try {
+        const text = await webSpeechASR(
+          WEB_SPEECH_LANG[code] ?? "en-IN",
+          onStateChange,
+        );
+        if (!text) throw new Error("Empty transcript");
+        onStateChange?.("result");
+        return { text, language: code, source: "web-speech" };
+      } catch (webSpeechErr) {
+        console.warn(
+          "[speechService] Web Speech failed for English, trying Whisper:",
+          webSpeechErr,
+        );
+        // Capture audio for Whisper
+        onStateChange?.("listening");
+        const audioBlob = await recordAudio(5000);
+        const text = await whisperASR(audioBlob, onStateChange);
+        onStateChange?.("result");
+        return { text, language: code, source: "whisper" };
+      }
     }
 
-    // Hindi / Gujarati → try Bhashini first
+    // ── Hindi / Gujarati: Bhashini → Web Speech → Whisper fallback ──────────
     const bhashiniCode = BHASHINI_LANG[code];
     if (bhashiniCode) {
       try {
@@ -174,24 +245,36 @@ export async function speechToText(
         onStateChange?.("result");
         return { text, language: code, source: "bhashini" };
       } catch (bhashiniErr) {
-        // Bhashini failed (503 = not configured, or network error)
-        // Fall through to Web Speech
-        console.warn("[speechService] Bhashini failed, falling back to Web Speech:", bhashiniErr);
-        const bcp47 = WEB_SPEECH_LANG[code] ?? "hi-IN";
-        const text = await webSpeechASR(bcp47, onStateChange);
-        if (!text) throw new Error("Empty transcript");
-        onStateChange?.("result");
-        return { text, language: code, source: "web-speech" };
+        console.warn(
+          "[speechService] Bhashini failed, trying Web Speech:",
+          bhashiniErr,
+        );
+        try {
+          const bcp47 = WEB_SPEECH_LANG[code] ?? "hi-IN";
+          const text = await webSpeechASR(bcp47, onStateChange);
+          if (!text) throw new Error("Empty transcript");
+          onStateChange?.("result");
+          return { text, language: code, source: "web-speech" };
+        } catch (webSpeechErr) {
+          console.warn(
+            "[speechService] Web Speech also failed, trying Whisper:",
+            webSpeechErr,
+          );
+          onStateChange?.("listening");
+          const audioBlob = await recordAudio(5000);
+          const text = await whisperASR(audioBlob, onStateChange);
+          onStateChange?.("result");
+          return { text, language: code, source: "whisper" };
+        }
       }
     }
 
-    // Unknown language → Web Speech with English
+    // ── Unknown language: Web Speech with English ────────────────────────────
     const text = await webSpeechASR("en-IN", onStateChange);
     onStateChange?.("result");
     return { text, language: code, source: "web-speech" };
-
   } catch (err) {
-    console.warn("[speechService] All ASR failed, using fallback:", err);
+    console.warn("[speechService] All ASR engines failed, using fallback:", err);
     onStateChange?.("result");
     return {
       text: FALLBACK[code] ?? FALLBACK["en"]!,
