@@ -1,6 +1,76 @@
-# MediKiosk Assist
+# MediKiosk — Digital Health & Appointment System
 
-Build a polished working prototype for an SIH internal hackathon project called "MediKiosk".
+**SIH 2026 · Problem Statement: Digital Health Monitoring and Appointment Support System**
+
+> Long waiting times, difficulty managing appointments, lack of timely reminders and limited access to basic health information.
+
+---
+
+## What MediKiosk does
+
+MediKiosk is a multimodal digital health platform for busy Indian public healthcare facilities. It addresses the SIH problem statement directly:
+
+| Feature | How |
+|---|---|
+| **Appointment management** | Book, track and update OPD appointments from kiosk or phone |
+| **Live queue tracking** | Real-time queue position and estimated wait time on `/portal` |
+| **Timely reminders** | SMS + Email reminders sent day-before and on the day (via `/api/notify`) |
+| **Follow-up scheduling** | Doctor books follow-up from dashboard; patient gets automatic reminder |
+| **Basic health info access** | Pre-consultation history, doctor notes, lab extracts all available on patient portal |
+| **AI-assisted intake** | Voice + touch clinical history in English / हिन्दी / ગુજરાતી via Bhashini |
+| **Kiosk + Mobile** | Same engine served via hospital kiosk OR patient's own phone (QR scan) |
+
+---
+
+## Routes
+
+| URL | Purpose |
+|---|---|
+| `/` | Hospital kiosk — full pre-consultation + appointment creation |
+| `/mobile` | Patient's phone intake (same clinical engine) |
+| `/portal` | **Patient portal** — appointments, queue position, reminders, follow-ups |
+| `/api/appointment` | Appointment CRUD (GET / POST / PATCH) |
+| `/api/notify` | SMS / Email reminder dispatch (simulated; wire Twilio/MSG91 for prod) |
+| `/api/session` | Session management for kiosk↔phone handoff |
+| `/api/bhashini` | Bhashini Dhruva ASR proxy (Hindi / Gujarati voice) |
+| `/api/bhashini-tts` | Bhashini Dhruva TTS proxy |
+| `/api/whisper` | OpenAI Whisper ASR fallback (English) |
+
+---
+
+## Environment variables
+
+```
+# Bhashini (ASR + TTS for Hindi / Gujarati)
+BHASHINI_USER_ID=your-user-id
+BHASHINI_UDYAT_KEY=your-udyat-key
+BHASHINI_API_KEY=your-inference-key
+
+# OpenAI Whisper (English ASR fallback)
+OPENAI_API_KEY=sk-...
+```
+
+---
+
+## Safety
+
+This is a prototype. It does **not** provide medical diagnosis or treatment recommendations. All AI-generated content is clearly labelled as a draft requiring physician verification.
+
+---
+
+## Development
+
+```sh
+git clone <this-repository-url>
+cd medikiosk-ayush
+bun install
+bun run dev
+```
+
+Open `http://localhost:8080`.
+
+Built with [Lovable](https://lovable.dev) · **Live app**: https://medikiosk-ayush.lovable.app
+
 
 PROJECT PURPOSE:
 
