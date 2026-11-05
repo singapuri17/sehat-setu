@@ -1,15 +1,15 @@
-﻿/**
- * / â€” Patient Appointment Booking
+/**
+ * / — Patient Appointment Booking
  *
  * Primary flow (3 steps):
- *   1. Book  â€” name, phone, complaint, dept, date, time slot
- *   2. History (optional) â€” basic symptoms Q&A + document upload
- *   3. Confirm â€” review + submit â†’ appointment created + SMS sent
+ *   1. Book  — name, phone, complaint, dept, date, time slot
+ *   2. History (optional) — basic symptoms Q&A + document upload
+ *   3. Confirm — review + submit â†’ appointment created + SMS sent
  *
  * Navigation links to:
- *   /portal  â€” patient checks own appointments + queue
- *   /staff   â€” staff manage schedule
- *   /doctor  â€” doctor dashboard (via doctorLogin view)
+ *   /portal  — patient checks own appointments + queue
+ *   /staff   — staff manage schedule
+ *   /doctor  — doctor dashboard (via doctorLogin view)
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -41,9 +41,9 @@ import { QRCodeSVG } from "qrcode.react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MediEase â€” Book Your Appointment" },
+      { title: "MediEase — Book Your Appointment" },
       { name: "description", content: "Book a hospital appointment, check your queue position and get SMS reminders." },
-      { property: "og:title", content: "MediEase â€” Digital Health & Appointment System" },
+      { property: "og:title", content: "MediEase — Digital Health & Appointment System" },
       { property: "og:type", content: "website" },
     ],
   }),
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/")({
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type View =
-  | "home"         // Landing â€” book or check appointment
+  | "home"         // Landing — book or check appointment
   | "book"         // Step 1: quick booking form
   | "history"      // Step 2 (optional): symptoms + documents
   | "confirm"      // Step 3: review + submit
@@ -65,21 +65,21 @@ type View =
 type Complaint = "Fever" | "Abdominal pain" | "Headache" | "Cough" | "Chest pain";
 
 const DEPARTMENTS = [
-  "OPD â€” General", "OPD â€” Cardiology", "OPD â€” Orthopaedics",
-  "OPD â€” Gynaecology", "OPD â€” Paediatrics", "OPD â€” ENT",
-  "OPD â€” Dermatology", "OPD â€” Neurology", "OPD â€” AYUSH",
+  "OPD — General", "OPD — Cardiology", "OPD — Orthopaedics",
+  "OPD — Gynaecology", "OPD — Paediatrics", "OPD — ENT",
+  "OPD — Dermatology", "OPD — Neurology", "OPD — AYUSH",
 ];
 
 const DOCTORS: Record<string, string[]> = {
-  "OPD â€” General":      ["Dr. M. Rao", "Dr. S. Nair"],
-  "OPD â€” Cardiology":   ["Dr. R. Sharma", "Dr. P. Joshi"],
-  "OPD â€” Orthopaedics": ["Dr. A. Mehta"],
-  "OPD â€” Gynaecology":  ["Dr. K. Desai", "Dr. L. Pillai"],
-  "OPD â€” Paediatrics":  ["Dr. N. Kumar"],
-  "OPD â€” ENT":          ["Dr. H. Singh"],
-  "OPD â€” Dermatology":  ["Dr. V. Reddy"],
-  "OPD â€” Neurology":    ["Dr. B. Iyer"],
-  "OPD â€” AYUSH":        ["Dr. T. Gupta"],
+  "OPD — General":      ["Dr. M. Rao", "Dr. S. Nair"],
+  "OPD — Cardiology":   ["Dr. R. Sharma", "Dr. P. Joshi"],
+  "OPD — Orthopaedics": ["Dr. A. Mehta"],
+  "OPD — Gynaecology":  ["Dr. K. Desai", "Dr. L. Pillai"],
+  "OPD — Paediatrics":  ["Dr. N. Kumar"],
+  "OPD — ENT":          ["Dr. H. Singh"],
+  "OPD — Dermatology":  ["Dr. V. Reddy"],
+  "OPD — Neurology":    ["Dr. B. Iyer"],
+  "OPD — AYUSH":        ["Dr. T. Gupta"],
 };
 
 const TIME_SLOTS = [
@@ -140,7 +140,7 @@ function App() {
   // Booking form state
   const [form, setForm] = useState({
     name: "", age: "", gender: "Male", phone: "", email: "",
-    complaint: "Fever", department: "OPD â€” General",
+    complaint: "Fever", department: "OPD — General",
     doctor: "Dr. M. Rao",
     date: new Date().toISOString().slice(0, 10),
     timeSlot: "09:00 AM",
@@ -179,7 +179,7 @@ function App() {
 
   const resetAll = () => {
     setView("home");
-    setForm({ name:"",age:"",gender:"Male",phone:"",email:"",complaint:"Fever",department:"OPD â€” General",doctor:"Dr. M. Rao",date:new Date().toISOString().slice(0,10),timeSlot:"09:00 AM" });
+    setForm({ name:"",age:"",gender:"Male",phone:"",email:"",complaint:"Fever",department:"OPD — General",doctor:"Dr. M. Rao",date:new Date().toISOString().slice(0,10),timeSlot:"09:00 AM" });
     setIncludeHistory(false); setQuestionIndex(0); setAnswers({}); setSpeechState("idle");
     setTranscription(""); setPendingVoice(null); setDocuments([]); setProcessing(false);
     setExtracted(null); setBookedApt(null); setBookError(null);
@@ -358,7 +358,7 @@ function HomeView({ t, lang, setLang, onBook }: { t: T; lang: Lang; setLang: (l:
           Book your<br />appointment online
         </h1>
         <p className="text-base font-medium text-foreground/55 max-w-md mx-auto leading-relaxed">
-          Book in seconds, track your queue position live, and get reminders on your phone â€” no waiting at the counter.
+          Book in seconds, track your queue position live, and get reminders on your phone — no waiting at the counter.
         </p>
 
         {/* Language selector */}
@@ -595,7 +595,7 @@ function HistoryStep({ t, lang, complaint, questions, currentQ, questionIndex, a
 
       <div>
         <h1 className="text-2xl font-black text-kiosk-navy">Medical History</h1>
-        <p className="text-sm font-medium text-foreground/50 mt-1">Optional â€” helps your doctor prepare before your visit.</p>
+        <p className="text-sm font-medium text-foreground/50 mt-1">Optional — helps your doctor prepare before your visit.</p>
       </div>
 
       {/* Tabs */}
@@ -661,7 +661,7 @@ function HistoryStep({ t, lang, complaint, questions, currentQ, questionIndex, a
             </button>
             <div>
               <p className="text-sm font-bold text-kiosk-navy">
-                {speechState === "listening" ? t("Listeningâ€¦") : speechState === "processing" ? t("Understandingâ€¦") : "Speak your answer"}
+                {speechState === "listening" ? t("Listening…") : speechState === "processing" ? t("Understanding…") : "Speak your answer"}
               </p>
               {transcription && <p className="text-xs text-foreground/50">{transcription}</p>}
             </div>
@@ -695,7 +695,7 @@ function HistoryStep({ t, lang, complaint, questions, currentQ, questionIndex, a
               }}
               disabled={!answers[questionIndex]}
               className="flex-1 rounded-xl bg-kiosk-teal text-white font-black hover:bg-kiosk-teal/90 disabled:opacity-40">
-              {questionIndex < total - 1 ? "Next question" : "Done â€” add documents"} <ArrowRight size={14} />
+              {questionIndex < total - 1 ? "Next question" : "Done — add documents"} <ArrowRight size={14} />
             </Button>
           </div>
         </div>
@@ -707,7 +707,7 @@ function HistoryStep({ t, lang, complaint, questions, currentQ, questionIndex, a
           <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-kiosk-teal/35 bg-kiosk-teal/3 text-center hover:border-kiosk-teal/60 hover:bg-kiosk-teal/5 transition-all">
             <Upload className="mb-1 text-kiosk-teal" size={22} />
             <span className="text-sm font-bold text-kiosk-navy">Tap to upload</span>
-            <span className="text-xs text-foreground/40">PDF Â· JPG Â· PNG</span>
+            <span className="text-xs text-foreground/40">PDF · JPG · PNG</span>
             <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) setDocuments((d) => [...d, f.name]); }} />
           </label>
@@ -721,7 +721,7 @@ function HistoryStep({ t, lang, complaint, questions, currentQ, questionIndex, a
           {documents.length > 0 && !extracted && (
             <Button onClick={processDocuments} disabled={processing} variant="outline"
               className="w-full rounded-xl font-bold border-kiosk-teal/40 text-kiosk-navy hover:bg-kiosk-teal/5">
-              {processing ? <><RefreshCw size={14} className="animate-spin" /> Extractingâ€¦</> : "Extract information from documents"}
+              {processing ? <><RefreshCw size={14} className="animate-spin" /> Extracting…</> : "Extract information from documents"}
             </Button>
           )}
           {extracted && (
@@ -759,7 +759,7 @@ function ConfirmStep({ t, form, answers, questions, documents, extracted, bookin
   onBack: () => void; onSubmit: () => void;
 }) {
   const rows = [
-    { label: "Patient",    value: `${form.name}${form.age ? `, ${form.age}y` : ""}${form.gender ? ` Â· ${form.gender}` : ""}` },
+    { label: "Patient",    value: `${form.name}${form.age ? `, ${form.age}y` : ""}${form.gender ? ` · ${form.gender}` : ""}` },
     { label: "Mobile",     value: form.phone },
     { label: "Complaint",  value: form.complaint },
     { label: "Department", value: form.department },
@@ -832,7 +832,7 @@ function ConfirmStep({ t, form, answers, questions, documents, extracted, bookin
         </Button>
         <Button onClick={onSubmit} disabled={booking}
           className="flex-1 min-h-12 rounded-2xl bg-kiosk-coral font-black text-white shadow-lg shadow-kiosk-coral/25 hover:bg-kiosk-coral/90 disabled:opacity-40">
-          {booking ? <><RefreshCw size={16} className="animate-spin" /> Bookingâ€¦</> : <><Calendar size={16} /> Confirm Booking</>}
+          {booking ? <><RefreshCw size={16} className="animate-spin" /> Booking…</> : <><Calendar size={16} /> Confirm Booking</>}
         </Button>
       </div>
     </div>
@@ -857,14 +857,14 @@ function SuccessView({ t, name, phone, apt, form, onNewBooking }: {
         </div>
         <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-kiosk-green">Appointment Confirmed</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-kiosk-navy">{name || "Your appointment"} is booked.</h1>
-        <p className="mt-2 text-sm font-medium text-foreground/55">{form.doctor} Â· {form.department}</p>
+        <p className="mt-2 text-sm font-medium text-foreground/55">{form.doctor} · {form.department}</p>
 
         <div className="mt-5 rounded-2xl bg-kiosk-teal/5 border border-kiosk-teal/20 p-5 space-y-3 text-left">
           {[
             { label: "Token",    value: apt.token,    big: true },
             { label: "Date",     value: form.date === new Date().toISOString().slice(0,10) ? `Today, ${form.date}` : form.date },
             { label: "Time",     value: form.timeSlot },
-            { label: "Queue",    value: apt.queuePosition > 0 ? `#${apt.queuePosition} Â· ~${apt.estimatedWait} min wait` : "Assigned shortly" },
+            { label: "Queue",    value: apt.queuePosition > 0 ? `#${apt.queuePosition} · ~${apt.estimatedWait} min wait` : "Assigned shortly" },
           ].map(({ label, value, big }) => (
             <div key={label} className="flex items-center justify-between">
               <span className="text-[11px] font-black uppercase text-foreground/40">{label}</span>
@@ -948,7 +948,7 @@ function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selec
       <div className="w-full max-w-md rounded-3xl border border-border/50 bg-white p-8 shadow-xl">
         <div className="mb-6 flex items-center gap-3">
           <div className="grid size-12 place-items-center rounded-2xl bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/30"><Stethoscope size={22} /></div>
-          <div><p className="text-2xl font-black text-kiosk-navy">Doctor sign in</p><p className="text-xs font-medium text-foreground/45">MediEase Â· demo</p></div>
+          <div><p className="text-2xl font-black text-kiosk-navy">Doctor sign in</p><p className="text-xs font-medium text-foreground/45">MediEase · demo</p></div>
         </div>
         <div className="rounded-xl bg-kiosk-teal/5 border border-kiosk-teal/20 p-4 text-sm font-medium text-kiosk-navy mb-4 space-y-1">
           <p className="font-bold">Demo credentials:</p>
@@ -1055,7 +1055,7 @@ function DoctorDashboard({ selectedPatient, setSelectedPatient, setView }: { sel
             <span className="grid size-10 place-items-center rounded-xl bg-kiosk-coral/10 font-black text-kiosk-coral">{patient.token.split("-")[1]}</span>
             <span className="flex-1 min-w-0">
               <span className="block font-black text-kiosk-navy">{patient.name}</span>
-              <span className="block text-xs font-medium text-foreground/50">{patient.age}y Â· {patient.gender} Â· {patient.submitted}</span>
+              <span className="block text-xs font-medium text-foreground/50">{patient.age}y · {patient.gender} · {patient.submitted}</span>
             </span>
             <span className="flex-1 text-sm font-bold text-foreground/65">{patient.complaint}</span>
             <span className={`rounded-full px-3 py-1 text-xs font-black ${
@@ -1101,7 +1101,7 @@ function TodaysCasesView({ onOpenCase }: { onOpenCase: (t: string) => void }) {
           <button key={p.token} onClick={() => onOpenCase(p.token)}
             className="w-full flex flex-col gap-2 rounded-2xl border bg-white p-4 text-left shadow-sm hover:border-kiosk-teal/30 hover:shadow-md transition-all sm:flex-row sm:items-center border-border/60">
             <span className="grid size-10 place-items-center rounded-xl bg-kiosk-coral/10 font-black text-kiosk-coral">{p.token.split("-")[1]}</span>
-            <span className="flex-1"><span className="block font-black text-kiosk-navy">{p.name}</span><span className="text-xs font-medium text-foreground/50">{p.age}y Â· {p.gender} Â· {p.submitted}</span></span>
+            <span className="flex-1"><span className="block font-black text-kiosk-navy">{p.name}</span><span className="text-xs font-medium text-foreground/50">{p.age}y · {p.gender} · {p.submitted}</span></span>
             <span className="flex-1 text-sm font-bold text-foreground/65">{p.complaint}</span>
             <span className={`rounded-full px-3 py-1 text-xs font-black ${p.status==="Verified"?"bg-kiosk-teal/15 text-kiosk-teal border border-kiosk-teal/20":p.status==="Ready"?"bg-kiosk-green/15 text-kiosk-green border border-kiosk-green/20":"bg-kiosk-yellow/20 text-kiosk-navy border border-kiosk-yellow/30"}`}>{p.status}</span>
             <ChevronRight className="hidden text-foreground/25 sm:block" size={16} />
@@ -1155,7 +1155,7 @@ function AppointmentsView() {
           <button key={f} onClick={()=>setFilter(f)} className={`rounded-lg px-4 py-1.5 text-sm font-bold capitalize ${filter===f?"bg-white text-kiosk-navy shadow-sm":"text-foreground/50"}`}>{f}</button>
         ))}
       </div>
-      {loading ? <div className="flex items-center gap-2 text-sm text-foreground/50"><RefreshCw size={14} className="animate-spin"/>Loadingâ€¦</div>
+      {loading ? <div className="flex items-center gap-2 text-sm text-foreground/50"><RefreshCw size={14} className="animate-spin"/>Loading…</div>
       : filtered.length===0 ? <div className="rounded-2xl border bg-white p-8 text-center"><p className="text-sm font-bold text-kiosk-navy">No appointments</p></div>
       : <div className="space-y-2">
           {filtered.map((apt) => (
@@ -1164,8 +1164,8 @@ function AppointmentsView() {
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-kiosk-coral/10 font-black text-kiosk-coral">{apt.token.split("-")[1]}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-kiosk-navy">{apt.patientName}</p>
-                  <p className="text-xs font-medium text-foreground/50">{apt.patientAge}y Â· {apt.complaint} Â· {apt.doctor}</p>
-                  <p className="text-xs font-medium text-foreground/40">{apt.date===today?"Today":apt.date} Â· {apt.timeSlot}</p>
+                  <p className="text-xs font-medium text-foreground/50">{apt.patientAge}y · {apt.complaint} · {apt.doctor}</p>
+                  <p className="text-xs font-medium text-foreground/40">{apt.date===today?"Today":apt.date} · {apt.timeSlot}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-black ${import_statusColor_inline(apt.status)}`}>{apt.status.replace("-"," ")}</span>
                 <div className="flex gap-2 flex-wrap">
@@ -1189,7 +1189,7 @@ function AppointmentsView() {
             <div className="space-y-3">
               <div><label className="text-[11px] font-black uppercase text-foreground/40">Date</label><Input type="date" value={fuDate} onChange={e=>setFuDate(e.target.value)} min={new Date(Date.now()+86400000).toISOString().slice(0,10)} className="mt-1 rounded-xl border-border/60"/></div>
               <div><label className="text-[11px] font-black uppercase text-foreground/40">Reason</label><Input value={fuReason} onChange={e=>setFuReason(e.target.value)} placeholder="e.g. Review results" className="mt-1 rounded-xl border-border/60"/></div>
-              <div><label className="text-[11px] font-black uppercase text-foreground/40">Note for patient</label><Input value={fuNote} onChange={e=>setFuNote(e.target.value)} placeholder="Instructionsâ€¦" className="mt-1 rounded-xl border-border/60"/></div>
+              <div><label className="text-[11px] font-black uppercase text-foreground/40">Note for patient</label><Input value={fuNote} onChange={e=>setFuNote(e.target.value)} placeholder="Instructions…" className="mt-1 rounded-xl border-border/60"/></div>
               <div><label className="text-[11px] font-black uppercase text-foreground/40">Remind via</label>
                 <div className="mt-1 flex gap-2">{(["sms","email","both"] as const).map(ch=><button key={ch} onClick={()=>setFuChannel(ch)} className={`flex-1 rounded-lg py-1.5 text-xs font-black capitalize ${fuChannel===ch?"bg-kiosk-teal text-white":"border border-border/50 text-foreground/50"}`}>{ch}</button>)}</div>
               </div>
@@ -1229,15 +1229,15 @@ function DoctorSettingsView() {
       <Button onClick={()=>{setSaved(true);setTimeout(()=>setSaved(false),3000);}} className="w-full min-h-12 rounded-2xl bg-kiosk-teal font-black text-white shadow-lg hover:bg-kiosk-teal/90">
         <Save size={16}/> Save preferences
       </Button>
-      <p className="text-center text-xs text-foreground/35">Demo mode â€” not persisted between sessions</p>
+      <p className="text-center text-xs text-foreground/35">Demo mode — not persisted between sessions</p>
     </div>
   );
 }
 
 function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultation; onBack: () => void }) {
   const [verified,setVerified]=useState(false); const [isEditing,setIsEditing]=useState(false);
-  const [draft,setDraft]=useState({complaint:selectedCase.complaint,history:selectedCase.history,pastHistory:"Type 2 Diabetes â€” uploaded record",medications:selectedCase.medications.join(", "),allergies:selectedCase.allergies,investigations:selectedCase.investigations.join(", ")});
-  useEffect(()=>{setDraft({complaint:selectedCase.complaint,history:selectedCase.history,pastHistory:"Type 2 Diabetes â€” uploaded record",medications:selectedCase.medications.join(", "),allergies:selectedCase.allergies,investigations:selectedCase.investigations.join(", ")});setVerified(false);setIsEditing(false);},[selectedCase.token]); // eslint-disable-line
+  const [draft,setDraft]=useState({complaint:selectedCase.complaint,history:selectedCase.history,pastHistory:"Type 2 Diabetes — uploaded record",medications:selectedCase.medications.join(", "),allergies:selectedCase.allergies,investigations:selectedCase.investigations.join(", ")});
+  useEffect(()=>{setDraft({complaint:selectedCase.complaint,history:selectedCase.history,pastHistory:"Type 2 Diabetes — uploaded record",medications:selectedCase.medications.join(", "),allergies:selectedCase.allergies,investigations:selectedCase.investigations.join(", ")});setVerified(false);setIsEditing(false);},[selectedCase.token]); // eslint-disable-line
   const field=(key:keyof typeof draft)=>({text:draft[key],editing:isEditing,onEdit:(v:string)=>setDraft(d=>({...d,[key]:v}))});
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -1246,7 +1246,7 @@ function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultat
         <div>
           <p className="text-[10px] font-black uppercase tracking-widest text-kiosk-coral">Token {selectedCase.token}</p>
           <h2 className="mt-1 text-2xl font-black text-kiosk-navy">{selectedCase.name}</h2>
-          <p className="text-sm text-foreground/50">{selectedCase.age}y Â· {selectedCase.gender} Â· {draft.complaint} Â· {selectedCase.submitted}</p>
+          <p className="text-sm text-foreground/50">{selectedCase.age}y · {selectedCase.gender} · {draft.complaint} · {selectedCase.submitted}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={()=>setIsEditing(e=>!e)} className={`rounded-xl font-bold ${isEditing?"border-kiosk-teal bg-kiosk-teal/10 text-kiosk-teal":"bg-white border-border/60 text-kiosk-navy"}`}>
@@ -1257,7 +1257,7 @@ function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultat
           </Button>
         </div>
       </div>
-      {isEditing&&<div className="flex items-center gap-2 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-4 py-2.5 text-sm font-bold text-kiosk-teal"><Pencil size={14}/>Click any field to edit Â· Press "Done" when finished.</div>}
+      {isEditing&&<div className="flex items-center gap-2 rounded-xl bg-kiosk-teal/8 border border-kiosk-teal/20 px-4 py-2.5 text-sm font-bold text-kiosk-teal"><Pencil size={14}/>Click any field to edit · Press "Done" when finished.</div>}
       {verified&&<div className="flex items-center gap-2 rounded-xl bg-kiosk-green/12 border border-kiosk-green/20 px-4 py-2.5 text-sm font-bold text-kiosk-green"><BadgeCheck size={16}/>Case verified and saved.</div>}
       <div className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-3">

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * sessionService.ts
  *
  * Lightweight client-side session management for MediEase.
@@ -23,7 +23,7 @@ export interface MediSession {
   lang: string;
   createdAt: number; // epoch ms
   updatedAt: number;
-  /** Partial intake data â€” populated as the patient progresses */
+  /** Partial intake data — populated as the patient progresses */
   data: Partial<{
     name: string;
     age: string;
@@ -61,7 +61,7 @@ export function setLocalSessionId(id: string): void {
   try {
     localStorage.setItem(SESSION_KEY, id);
   } catch {
-    /* storage unavailable â€” kiosk still works without persistence */
+    /* storage unavailable — kiosk still works without persistence */
   }
 }
 

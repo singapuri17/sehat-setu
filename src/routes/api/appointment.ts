@@ -1,9 +1,9 @@
-﻿/**
- * GET  /api/appointment              â€” list all appointments
- * GET  /api/appointment?phone=XXXX   â€” appointments by phone number
- * GET  /api/appointment?id=APT-XXXX  â€” single appointment by ID
- * POST /api/appointment              â€” create appointment
- * PATCH /api/appointment             â€” update status / add follow-up
+/**
+ * GET  /api/appointment              — list all appointments
+ * GET  /api/appointment?phone=XXXX   — appointments by phone number
+ * GET  /api/appointment?id=APT-XXXX  — single appointment by ID
+ * POST /api/appointment              — create appointment
+ * PATCH /api/appointment             — update status / add follow-up
  */
 
 import { createAPIFileRoute } from "@tanstack/react-start/api";
@@ -85,7 +85,7 @@ function seed() {
     id: "APT-0100", token: "A-101",
     patientName: "Priya Mehta", patientAge: "29", patientGender: "Female",
     phone: "9900112233", email: "priya.mehta@example.com",
-    complaint: "Fever", department: "OPD â€” General", doctor: "Dr. M. Rao",
+    complaint: "Fever", department: "OPD — General", doctor: "Dr. M. Rao",
     date: today, timeSlot: "09:00 AM", status: "completed",
     queuePosition: 0, estimatedWait: 0,
     createdAt: new Date(Date.now() - 7200000).toISOString(),
@@ -99,7 +99,7 @@ function seed() {
     }],
     followUps: [{
       id: "FU-001", appointmentId: "APT-0100", scheduledDate: in5Days,
-      reason: "Review fever â€” check if resolved", status: "scheduled",
+      reason: "Review fever — check if resolved", status: "scheduled",
       doctorNote: "Prescribed paracetamol 500mg TDS for 3 days. Return if fever persists beyond 5 days.",
       reminders: [{
         id: "REM-FU-001", appointmentId: "APT-0100", channel: "both",
@@ -114,7 +114,7 @@ function seed() {
     id: "APT-0099", token: "A-100",
     patientName: "Suresh Kumar", patientAge: "71", patientGender: "Male",
     phone: "9811223344", email: "suresh.kumar@example.com",
-    complaint: "Chest pain", department: "OPD â€” Cardiology", doctor: "Dr. M. Rao",
+    complaint: "Chest pain", department: "OPD — Cardiology", doctor: "Dr. M. Rao",
     date: yesterday, timeSlot: "08:30 AM", status: "completed",
     queuePosition: 0, estimatedWait: 0,
     createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
@@ -138,7 +138,7 @@ function seed() {
     id: "APT-0101", token: "A-102",
     patientName: "Rahul Patel", patientAge: "52", patientGender: "Male",
     phone: "9876543210", email: "rahul.patel@example.com",
-    complaint: "Abdominal pain", department: "OPD â€” General", doctor: "Dr. M. Rao",
+    complaint: "Abdominal pain", department: "OPD — General", doctor: "Dr. M. Rao",
     date: today, timeSlot: "09:30 AM", status: "waiting",
     queuePosition: 2, estimatedWait: 14,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
@@ -157,7 +157,7 @@ function seed() {
     id: "APT-0102", token: "A-103",
     patientName: "Meena Shah", patientAge: "64", patientGender: "Female",
     phone: "9845012345", email: "meena.shah@example.com",
-    complaint: "Cough", department: "OPD â€” General", doctor: "Dr. M. Rao",
+    complaint: "Cough", department: "OPD — General", doctor: "Dr. M. Rao",
     date: today, timeSlot: "10:00 AM", status: "waiting",
     queuePosition: 3, estimatedWait: 22,
     createdAt: new Date(Date.now() - 2400000).toISOString(),
@@ -168,7 +168,7 @@ function seed() {
     id: "APT-0103", token: "A-104",
     patientName: "Arjun Desai", patientAge: "38", patientGender: "Male",
     phone: "9123456789", email: "arjun.desai@example.com",
-    complaint: "Headache", department: "OPD â€” General", doctor: "Dr. M. Rao",
+    complaint: "Headache", department: "OPD — General", doctor: "Dr. M. Rao",
     date: today, timeSlot: "10:30 AM", status: "scheduled",
     queuePosition: 4, estimatedWait: 35,
     createdAt: new Date(Date.now() - 1800000).toISOString(),

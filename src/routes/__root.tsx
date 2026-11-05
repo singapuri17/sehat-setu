@@ -1,4 +1,4 @@
-﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -77,10 +77,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MediEase â€” Digital Health & Appointment System" },
+      { title: "MediEase — Digital Health & Appointment System" },
       { name: "description", content: "MediEase: Appointment booking, live queue tracking, SMS/email reminders and follow-up support for public healthcare facilities." },
       { name: "author", content: "MediEase" },
-      { property: "og:title", content: "MediEase â€” Digital Health & Appointment System" },
+      { property: "og:title", content: "MediEase — Digital Health & Appointment System" },
       { property: "og:description", content: "Appointment management, queue tracking, SMS/email reminders and follow-ups." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

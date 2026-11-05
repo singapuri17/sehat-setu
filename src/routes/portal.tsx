@@ -1,5 +1,5 @@
-﻿/**
- * /portal â€” Patient Appointment Portal
+/**
+ * /portal — Patient Appointment Portal
  *
  * Entry points:
  *   /portal                    â†’ phone number lookup form
@@ -32,7 +32,7 @@ import { QRCodeSVG } from "qrcode.react";
 export const Route = createFileRoute("/portal")({
   head: () => ({
     meta: [
-      { title: "MediEase â€” My Appointments & Health Portal" },
+      { title: "MediEase — My Appointments & Health Portal" },
       { name: "description", content: "Check your appointment status, queue position, reminders and follow-ups." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
     ],
@@ -185,7 +185,7 @@ function PortalPage() {
               <div>
                 <p className="text-sm font-black text-white">{appointments[0]?.patientName}</p>
                 <p className="text-xs font-medium text-white/55">
-                  {appointments[0]?.patientAge}y Â· {appointments[0]?.patientGender} Â· {phone}
+                  {appointments[0]?.patientAge}y · {appointments[0]?.patientGender} · {phone}
                 </p>
               </div>
               <span className="ml-auto text-xs font-bold text-white/40">{appointments.length} appointment{appointments.length !== 1 ? "s" : ""}</span>
@@ -266,7 +266,7 @@ function PortalPage() {
             </div>
             <div className="flex items-center justify-center gap-2 text-xs font-semibold text-foreground/40">
               <ShieldCheck size={12} className="text-kiosk-green" />
-              Your data is private and secure Â· Ayushman Bharat Digital Mission
+              Your data is private and secure · Ayushman Bharat Digital Mission
             </div>
           </div>
         )}
@@ -368,7 +368,7 @@ function AppointmentCard({
             {/* Location */}
             <div className="flex items-center gap-2 text-sm text-foreground/60">
               <MapPin size={14} className="text-kiosk-coral shrink-0" />
-              <span className="font-medium">City Hospital, OPD Block A Â· Ground Floor</span>
+              <span className="font-medium">City Hospital, OPD Block A · Ground Floor</span>
             </div>
 
             {/* Notes */}
@@ -390,7 +390,7 @@ function AppointmentCard({
                       : <Timer size={12} className="text-kiosk-yellow shrink-0" />
                     }
                     <span className="font-medium capitalize">{rem.channel}</span>
-                    <span className="text-foreground/35">â€”</span>
+                    <span className="text-foreground/35">—</span>
                     <span>{rem.status === "sent" ? "Sent" : `Scheduled ${new Date(rem.scheduledFor).toLocaleDateString()}`}</span>
                   </div>
                 ))}
@@ -443,7 +443,7 @@ function PastAppointmentCard({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-black text-kiosk-navy">{apt.doctor}</p>
-          <p className="text-xs font-medium text-foreground/50">{apt.date} Â· {apt.timeSlot} Â· {apt.complaint}</p>
+          <p className="text-xs font-medium text-foreground/50">{apt.date} · {apt.timeSlot} · {apt.complaint}</p>
         </div>
         {pendingFollowUps.length > 0 && (
           <span className="shrink-0 rounded-full bg-kiosk-coral/15 border border-kiosk-coral/20 px-2 py-0.5 text-[10px] font-black text-kiosk-coral">
@@ -506,7 +506,7 @@ function PastAppointmentCard({
           {/* Token badge */}
           <div className="flex items-center gap-2 text-xs text-foreground/40">
             <BadgeCheck size={13} className="text-kiosk-teal" />
-            <span>Token {apt.token} Â· {apt.department}</span>
+            <span>Token {apt.token} · {apt.department}</span>
           </div>
         </div>
       )}

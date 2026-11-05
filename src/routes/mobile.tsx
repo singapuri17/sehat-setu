@@ -1,5 +1,5 @@
-﻿/**
- * /mobile â€” Patient's personal phone intake
+/**
+ * /mobile — Patient's personal phone intake
  *
  * Entry points:
  *   /mobile                  â†’ fresh mobile session (language select â†’ full intake)
@@ -33,7 +33,7 @@ import {
 export const Route = createFileRoute("/mobile")({
   head: () => ({
     meta: [
-      { title: "MediEase â€” Mobile Pre-Consultation" },
+      { title: "MediEase — Mobile Pre-Consultation" },
       { name: "description", content: "Complete your pre-consultation on your phone before reaching the OPD counter." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
     ],
@@ -60,7 +60,7 @@ type Complaint = "Fever" | "Abdominal pain" | "Headache" | "Cough" | "Chest pain
 
 const allergyQuestions: { question: string; choices?: string[] }[] = [
   { question: "Do you have any known allergies?", choices: ["No known allergies", "Medicine allergy", "Food allergy", "Dust / Pollen allergy", "Not sure"] },
-  { question: "Are you allergic to any medicines?", choices: ["No", "Yes â€” Penicillin / Antibiotics", "Yes â€” Painkillers (NSAIDs)", "Yes â€” Other medicines"] },
+  { question: "Are you allergic to any medicines?", choices: ["No", "Yes — Penicillin / Antibiotics", "Yes — Painkillers (NSAIDs)", "Yes — Other medicines"] },
 ];
 
 const interviewQuestions: Record<Complaint, { question: string; choices?: string[] }[]> = {
@@ -241,7 +241,7 @@ function MobilePage() {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-50 to-white">
         <div className="text-center">
           <div className="mx-auto size-14 animate-spin rounded-full border-4 border-kiosk-teal border-t-transparent" />
-          <p className="mt-4 text-sm font-bold text-kiosk-navy">Loading your sessionâ€¦</p>
+          <p className="mt-4 text-sm font-bold text-kiosk-navy">Loading your session…</p>
         </div>
       </div>
     );
@@ -382,7 +382,7 @@ function MobileWelcome({ t, lang, setLang, sessionId, onStart }: {
 
       <div className="flex items-center justify-center gap-2 text-xs font-semibold text-foreground/45">
         <ShieldCheck size={12} className="text-kiosk-green" />
-        {t("Safe, simple, patient-first Â· This kiosk does not provide a diagnosis")}
+        {t("Safe, simple, patient-first · This kiosk does not provide a diagnosis")}
       </div>
     </div>
   );
@@ -437,7 +437,7 @@ function MobileConsent({ t, lang, consent, setConsent, onBack, onContinue }: {
   return (
     <div className="mk-rise space-y-5">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 1 Â· Privacy</p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 1 · Privacy</p>
         <h2 className="text-2xl font-black text-kiosk-navy">{t("Can we collect your health details?")}</h2>
         <p className="mt-2 text-sm font-medium leading-relaxed text-foreground/60">
           {t("We will use your answers and previous records to prepare your consultation history.")}
@@ -475,7 +475,7 @@ function MobileDetails({ t, lang, details, setDetails, onBack, onContinue }: {
   return (
     <div className="mk-rise space-y-5">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 2 Â· About you</p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 2 · About you</p>
         <h2 className="text-2xl font-black text-kiosk-navy">{t("Tell us about yourself")}</h2>
       </div>
       <div className="space-y-4">
@@ -543,7 +543,7 @@ function MobileInterview({ t, lang, details, currentQuestion, questionIndex, que
     <div className="mk-rise space-y-5">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral">Step 3 Â· Questions</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral">Step 3 · Questions</p>
           <span className="text-xs font-bold text-foreground/45">{questionIndex + 1} / {total}</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-border mb-4">
@@ -590,7 +590,7 @@ function MobileInterview({ t, lang, details, currentQuestion, questionIndex, que
         </button>
         <div>
           <p className="text-sm font-black text-kiosk-navy">
-            {speechState === "listening" ? t("Listeningâ€¦") : speechState === "processing" ? t("Understandingâ€¦") : t("Speak")}
+            {speechState === "listening" ? t("Listening…") : speechState === "processing" ? t("Understanding…") : t("Speak")}
           </p>
           {transcription && <p className="text-xs text-foreground/50 mt-0.5">{transcription}</p>}
         </div>
@@ -630,7 +630,7 @@ function MobileDocuments({ t, documents, setDocuments, processing, extracted, pr
   return (
     <div className="mk-rise space-y-5">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 4 Â· Documents</p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 4 · Documents</p>
         <h2 className="text-2xl font-black text-kiosk-navy">{t("Do you have old medical papers?")}</h2>
         <p className="mt-1 text-sm font-medium text-foreground/55">Upload photos of prescriptions or lab reports.</p>
       </div>
@@ -638,7 +638,7 @@ function MobileDocuments({ t, documents, setDocuments, processing, extracted, pr
       <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-kiosk-teal/35 bg-kiosk-teal/5 transition-all hover:border-kiosk-teal/60">
         <Upload className="mb-2 text-kiosk-teal" size={24} />
         <span className="text-sm font-black text-kiosk-navy">Tap to upload</span>
-        <span className="mt-1 text-xs font-medium text-foreground/45">PDF Â· JPG Â· PNG</span>
+        <span className="mt-1 text-xs font-medium text-foreground/45">PDF · JPG · PNG</span>
         <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={addDoc} />
       </label>
 
@@ -655,7 +655,7 @@ function MobileDocuments({ t, documents, setDocuments, processing, extracted, pr
       {documents.length > 0 && !extracted && (
         <Button onClick={processDocuments} disabled={processing} variant="outline"
           className="w-full min-h-12 rounded-2xl border-kiosk-teal/40 font-bold text-kiosk-navy hover:bg-kiosk-teal/5">
-          {processing ? <><RefreshCw size={16} className="animate-spin" /> Processingâ€¦</> : "Extract information"}
+          {processing ? <><RefreshCw size={16} className="animate-spin" /> Processing…</> : "Extract information"}
         </Button>
       )}
 
@@ -701,7 +701,7 @@ function MobileComplete({ t, sessionId, name }: { t: T; sessionId: string; name:
 
       <div className="flex items-center gap-2 text-xs font-semibold text-foreground/40">
         <ShieldCheck size={13} className="text-kiosk-green" />
-        No diagnosis provided Â· For physician review only
+        No diagnosis provided · For physician review only
       </div>
     </div>
   );

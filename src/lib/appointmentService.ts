@@ -1,4 +1,4 @@
-﻿/**
+/**
  * appointmentService.ts
  *
  * Data models, demo data, and client-side helpers for the appointment,
@@ -25,8 +25,8 @@ export interface Reminder {
   id: string;
   appointmentId: string;
   channel: ReminderChannel;
-  scheduledFor: string;   // ISO datetime â€” when to send
-  sentAt?: string;        // ISO datetime â€” when actually sent
+  scheduledFor: string;   // ISO datetime — when to send
+  sentAt?: string;        // ISO datetime — when actually sent
   status: ReminderStatus;
   message: string;
 }
@@ -50,7 +50,7 @@ export interface Appointment {
   phone: string;          // Mobile number for SMS
   email: string;          // Email for email reminders
   complaint: string;
-  department: string;     // e.g. "OPD â€” General"
+  department: string;     // e.g. "OPD — General"
   doctor: string;         // e.g. "Dr. M. Rao"
   date: string;           // ISO date "YYYY-MM-DD"
   timeSlot: string;       // e.g. "10:30 AM"
@@ -81,7 +81,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9876543210",
     email: "rahul.patel@example.com",
     complaint: "Abdominal pain",
-    department: "OPD â€” General",
+    department: "OPD — General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "09:30 AM",
@@ -113,7 +113,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9845012345",
     email: "meena.shah@example.com",
     complaint: "Cough",
-    department: "OPD â€” General",
+    department: "OPD — General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "10:00 AM",
@@ -145,7 +145,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9123456789",
     email: "arjun.desai@example.com",
     complaint: "Headache",
-    department: "OPD â€” General",
+    department: "OPD — General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "10:30 AM",
@@ -167,7 +167,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9900112233",
     email: "priya.mehta@example.com",
     complaint: "Fever",
-    department: "OPD â€” General",
+    department: "OPD — General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "09:00 AM",
@@ -193,7 +193,7 @@ export const demoAppointments: Appointment[] = [
         id: "FU-001",
         appointmentId: "APT-0100",
         scheduledDate: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
-        reason: "Review fever â€” check if resolved",
+        reason: "Review fever — check if resolved",
         doctorNote: "Prescribed paracetamol 500mg TDS for 3 days. Return if fever persists beyond 5 days.",
         status: "scheduled",
         reminders: [
@@ -218,7 +218,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9811223344",
     email: "suresh.kumar@example.com",
     complaint: "Chest pain",
-    department: "OPD â€” Cardiology",
+    department: "OPD — Cardiology",
     doctor: "Dr. M. Rao",
     date: YESTERDAY,
     timeSlot: "08:30 AM",
@@ -321,7 +321,7 @@ export async function createAppointment(
       body: JSON.stringify(data),
     });
     if (res.ok) return (await res.json()) as Appointment;
-    // API unavailable (e.g. Vite dev mode) â€” use local fallback
+    // API unavailable (e.g. Vite dev mode) — use local fallback
     console.warn("[appointmentService] API unavailable, using local fallback");
     return makeLocalAppointment(data);
   } catch {
@@ -343,7 +343,7 @@ export async function updateAppointment(
     });
     if (res.ok) return (await res.json()) as Appointment;
   } catch { /* noop */ }
-  // Local fallback â€” mutate _localStore
+  // Local fallback — mutate _localStore
   const idx = _localStore.findIndex((a) => a.id === id);
   if (idx !== -1) {
     _localStore[idx] = { ..._localStore[idx], ...patch, updatedAt: new Date().toISOString() };
@@ -367,7 +367,7 @@ export async function sendReminder(
     });
     if (res.ok) return (await res.json()) as { success: boolean; message: string };
   } catch { /* noop */ }
-  // Dev fallback â€” log and pretend it worked
+  // Dev fallback — log and pretend it worked
   console.info(`[notify-dev] ${channel.toUpperCase()} â†’ Apt ${appointmentId}: ${message}`);
   return { success: true, message: `[Dev] ${channel} notification simulated` };
 }

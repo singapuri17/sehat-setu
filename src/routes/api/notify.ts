@@ -1,4 +1,4 @@
-﻿/**
+/**
  * POST /api/notify
  *
  * Simulated SMS / email notification dispatcher.
@@ -16,9 +16,9 @@
  *   appointmentId: string
  *   channel: "sms" | "email" | "both"
  *   message: string
- *   phone?: string       â€” required for sms
- *   email?: string       â€” required for email
- *   scheduledFor?: string â€” ISO datetime; if omitted, sends immediately
+ *   phone?: string       — required for sms
+ *   email?: string       — required for email
+ *   scheduledFor?: string — ISO datetime; if omitted, sends immediately
  * }
  */
 

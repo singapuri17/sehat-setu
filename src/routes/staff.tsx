@@ -1,5 +1,5 @@
-﻿/**
- * /staff â€” Hospital Staff Appointment Management Portal
+/**
+ * /staff — Hospital Staff Appointment Management Portal
  *
  * For reception / front-desk / nursing staff to:
  *   - View today's appointment schedule
@@ -31,8 +31,8 @@ import {
 export const Route = createFileRoute("/staff")({
   head: () => ({
     meta: [
-      { title: "MediEase â€” Staff Portal" },
-      { name: "description", content: "Hospital staff appointment management â€” book, track, remind, follow up." },
+      { title: "MediEase — Staff Portal" },
+      { name: "description", content: "Hospital staff appointment management — book, track, remind, follow up." },
     ],
   }),
   component: StaffPage,
@@ -41,21 +41,21 @@ export const Route = createFileRoute("/staff")({
 // â”€â”€â”€ Demo departments / doctors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DEPARTMENTS = [
-  "OPD â€” General", "OPD â€” Cardiology", "OPD â€” Orthopaedics",
-  "OPD â€” Gynaecology", "OPD â€” Paediatrics", "OPD â€” ENT",
-  "OPD â€” Dermatology", "OPD â€” Neurology", "OPD â€” AYUSH",
+  "OPD — General", "OPD — Cardiology", "OPD — Orthopaedics",
+  "OPD — Gynaecology", "OPD — Paediatrics", "OPD — ENT",
+  "OPD — Dermatology", "OPD — Neurology", "OPD — AYUSH",
 ];
 
 const DOCTORS: Record<string, string[]> = {
-  "OPD â€” General":      ["Dr. M. Rao", "Dr. S. Nair"],
-  "OPD â€” Cardiology":   ["Dr. R. Sharma", "Dr. P. Joshi"],
-  "OPD â€” Orthopaedics": ["Dr. A. Mehta"],
-  "OPD â€” Gynaecology":  ["Dr. K. Desai", "Dr. L. Pillai"],
-  "OPD â€” Paediatrics":  ["Dr. N. Kumar"],
-  "OPD â€” ENT":          ["Dr. H. Singh"],
-  "OPD â€” Dermatology":  ["Dr. V. Reddy"],
-  "OPD â€” Neurology":    ["Dr. B. Iyer"],
-  "OPD â€” AYUSH":        ["Dr. T. Gupta"],
+  "OPD — General":      ["Dr. M. Rao", "Dr. S. Nair"],
+  "OPD — Cardiology":   ["Dr. R. Sharma", "Dr. P. Joshi"],
+  "OPD — Orthopaedics": ["Dr. A. Mehta"],
+  "OPD — Gynaecology":  ["Dr. K. Desai", "Dr. L. Pillai"],
+  "OPD — Paediatrics":  ["Dr. N. Kumar"],
+  "OPD — ENT":          ["Dr. H. Singh"],
+  "OPD — Dermatology":  ["Dr. V. Reddy"],
+  "OPD — Neurology":    ["Dr. B. Iyer"],
+  "OPD — AYUSH":        ["Dr. T. Gupta"],
 };
 
 const TIME_SLOTS = [
@@ -116,7 +116,7 @@ function StaffPage() {
             <img src="/logo.png" alt="MediEase" className="size-8 rounded-lg object-contain" />
             <div>
               <p className="text-sm font-black text-kiosk-navy">MediEase Staff</p>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Reception Â· Front Desk</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Reception · Front Desk</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ function StaffPage() {
             ))}
           </nav>
           <div className="mt-4 rounded-xl bg-gray-50 border border-border/40 p-3 text-[11px] font-medium text-foreground/40">
-            Staff: Reception<br />City Hospital Â· Demo mode
+            Staff: Reception<br />City Hospital · Demo mode
           </div>
         </aside>
 
@@ -206,7 +206,7 @@ function StaffLogin({ user, pass, setUser, setPass, err, onLogin }: {
           </div>
           <div>
             <p className="text-xl font-black text-kiosk-navy">Staff Login</p>
-            <p className="text-xs font-medium text-foreground/45">Hospital Reception Â· Demo</p>
+            <p className="text-xs font-medium text-foreground/45">Hospital Reception · Demo</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -240,7 +240,7 @@ function StaffLogin({ user, pass, setUser, setPass, err, onLogin }: {
         </Button>
         <div className="mt-4 flex items-center justify-center gap-2">
           <a href="/" className="text-xs font-bold text-kiosk-teal hover:underline">â† Patient booking</a>
-          <span className="text-foreground/30">Â·</span>
+          <span className="text-foreground/30">·</span>
           <a href="/portal" className="text-xs font-bold text-kiosk-teal hover:underline">Patient portal</a>
         </div>
       </div>
@@ -343,7 +343,7 @@ function TodayView() {
 
       {/* Appointment list */}
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-foreground/50"><RefreshCw size={14} className="animate-spin" /> Loadingâ€¦</div>
+        <div className="flex items-center gap-2 text-sm text-foreground/50"><RefreshCw size={14} className="animate-spin" /> Loading…</div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-border/40 bg-white p-8 text-center">
           <Calendar size={32} className="mx-auto mb-2 text-foreground/20" />
@@ -423,7 +423,7 @@ function AppointmentRow({ apt, onStatus, onSMS, loading }: {
         {/* Patient */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-black text-kiosk-navy truncate">{apt.patientName}</p>
-          <p className="text-xs font-medium text-foreground/50 truncate">{apt.patientAge}y Â· {apt.patientGender} Â· {apt.complaint}</p>
+          <p className="text-xs font-medium text-foreground/50 truncate">{apt.patientAge}y · {apt.patientGender} · {apt.complaint}</p>
         </div>
 
         {/* Status badge */}
@@ -458,9 +458,9 @@ function AppointmentRow({ apt, onStatus, onSMS, loading }: {
             <span className="flex items-center gap-1"><Phone size={11} /> {apt.phone}</span>
             {apt.email && <span className="flex items-center gap-1"><Mail size={11} /> {apt.email}</span>}
             <span className="flex items-center gap-1"><Stethoscope size={11} /> {apt.doctor}</span>
-            <span className="flex items-center gap-1"><Clock3 size={11} /> {apt.timeSlot} Â· {apt.department}</span>
+            <span className="flex items-center gap-1"><Clock3 size={11} /> {apt.timeSlot} · {apt.department}</span>
             {apt.queuePosition > 0 && (
-              <span className="flex items-center gap-1"><Timer size={11} /> Queue #{apt.queuePosition} Â· {formatWait(apt.estimatedWait)}</span>
+              <span className="flex items-center gap-1"><Timer size={11} /> Queue #{apt.queuePosition} · {formatWait(apt.estimatedWait)}</span>
             )}
           </div>
 
@@ -477,7 +477,7 @@ function AppointmentRow({ apt, onStatus, onSMS, loading }: {
                 <div key={fu.id} className="flex items-center gap-2 text-xs text-foreground/60">
                   <Calendar size={11} className="text-kiosk-coral shrink-0" />
                   <span className="font-bold text-kiosk-navy">{fu.scheduledDate}</span>
-                  <span>â€” {fu.reason}</span>
+                  <span>— {fu.reason}</span>
                   <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-black ${fu.status === "completed" ? "bg-kiosk-teal/15 text-kiosk-teal" : "bg-kiosk-yellow/20 text-kiosk-navy"}`}>{fu.status}</span>
                 </div>
               ))}
@@ -538,7 +538,7 @@ function AppointmentRow({ apt, onStatus, onSMS, loading }: {
                 <div className="sm:col-span-2">
                   <label className="text-[11px] font-black uppercase text-foreground/40">Note for patient</label>
                   <Input value={fuNote} onChange={(e) => setFuNote(e.target.value)}
-                    placeholder="Instructionsâ€¦"
+                    placeholder="Instructions…"
                     className="mt-1 h-9 rounded-xl border-border/60 text-sm" />
                 </div>
                 <div>
@@ -574,7 +574,7 @@ function BookView({ onBooked }: { onBooked: () => void }) {
   const [form, setForm] = useState({
     patientName: "", patientAge: "", patientGender: "Male",
     phone: "", email: "",
-    complaint: "Fever", department: "OPD â€” General", doctor: "Dr. M. Rao",
+    complaint: "Fever", department: "OPD — General", doctor: "Dr. M. Rao",
     date: new Date().toISOString().slice(0, 10), timeSlot: "09:00 AM",
   });
   const [loading, setLoading] = useState(false);
@@ -634,12 +634,12 @@ function BookView({ onBooked }: { onBooked: () => void }) {
         </div>
         <p className="mt-5 text-xs font-black uppercase tracking-widest text-kiosk-green">Appointment Booked</p>
         <h2 className="mt-2 text-2xl font-black text-kiosk-navy">{success.patientName}</h2>
-        <p className="mt-1 text-sm font-medium text-foreground/55">{success.department} Â· {success.doctor}</p>
+        <p className="mt-1 text-sm font-medium text-foreground/55">{success.department} · {success.doctor}</p>
         <div className="mt-5 rounded-2xl bg-kiosk-teal/5 border border-kiosk-teal/20 p-4 space-y-2 text-left">
           <Row label="Token"    value={success.token} large />
           <Row label="Date"     value={success.date === new Date().toISOString().slice(0, 10) ? `Today, ${success.date}` : success.date} />
           <Row label="Time"     value={success.timeSlot} />
-          <Row label="Queue"    value={`Position #${success.queuePosition} Â· ~${success.estimatedWait} min wait`} />
+          <Row label="Queue"    value={`Position #${success.queuePosition} · ~${success.estimatedWait} min wait`} />
           <Row label="Complaint" value={success.complaint} />
           <Row label="Phone"    value={success.phone} />
         </div>
@@ -647,7 +647,7 @@ function BookView({ onBooked }: { onBooked: () => void }) {
           <Phone size={12} /> SMS confirmation sent to {success.phone}
         </div>
         <div className="mt-5 flex gap-3">
-          <Button variant="outline" onClick={() => { setSuccess(null); setForm({ patientName: "", patientAge: "", patientGender: "Male", phone: "", email: "", complaint: "Fever", department: "OPD â€” General", doctor: "Dr. M. Rao", date: new Date().toISOString().slice(0, 10), timeSlot: "09:00 AM" }); }}
+          <Button variant="outline" onClick={() => { setSuccess(null); setForm({ patientName: "", patientAge: "", patientGender: "Male", phone: "", email: "", complaint: "Fever", department: "OPD — General", doctor: "Dr. M. Rao", date: new Date().toISOString().slice(0, 10), timeSlot: "09:00 AM" }); }}
             className="flex-1 rounded-2xl font-bold border-border">
             Book another
           </Button>
@@ -763,7 +763,7 @@ function BookView({ onBooked }: { onBooked: () => void }) {
 
       <Button onClick={handleBook} disabled={loading || !form.patientName || form.phone.length < 10}
         className="w-full min-h-12 rounded-2xl bg-kiosk-teal font-black text-white shadow-lg shadow-kiosk-teal/25 hover:bg-kiosk-teal/90 disabled:opacity-40">
-        {loading ? <><RefreshCw size={16} className="animate-spin" /> Bookingâ€¦</> : <><Calendar size={16} /> Confirm Booking & Send SMS</>}
+        {loading ? <><RefreshCw size={16} className="animate-spin" /> Booking…</> : <><Calendar size={16} /> Confirm Booking & Send SMS</>}
       </Button>
     </div>
   );
@@ -821,7 +821,7 @@ function SearchView() {
       <div className="flex gap-2">
         <Input value={query} onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && search()}
-          placeholder="Search by name, phone, token, complaintâ€¦"
+          placeholder="Search by name, phone, token, complaint…"
           className="flex-1 rounded-xl border-border/60 focus-visible:ring-kiosk-teal" />
         <Button onClick={search} disabled={loading || !query.trim()}
           className="rounded-xl bg-kiosk-teal text-white font-black px-5 hover:bg-kiosk-teal/90 disabled:opacity-40">
@@ -846,8 +846,8 @@ function SearchView() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-black text-kiosk-navy">{apt.patientName}</p>
-                  <p className="text-xs font-medium text-foreground/50">{apt.patientAge}y Â· {apt.gender} Â· {apt.complaint}</p>
-                  <p className="text-xs font-medium text-foreground/40">{apt.date} Â· {apt.timeSlot} Â· {apt.doctor}</p>
+                  <p className="text-xs font-medium text-foreground/50">{apt.patientAge}y · {apt.gender} · {apt.complaint}</p>
+                  <p className="text-xs font-medium text-foreground/40">{apt.date} · {apt.timeSlot} · {apt.doctor}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-black ${statusColor(apt.status)}`}>
                   {apt.status.replace("-", " ")}
