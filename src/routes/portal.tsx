@@ -111,7 +111,7 @@ function PortalPage() {
             </div>
           </div>
           <a href="/" className="flex items-center gap-1.5 rounded-xl border border-kiosk-teal/30 bg-white px-3 py-1.5 text-xs font-bold text-kiosk-navy hover:bg-kiosk-teal/5 transition-colors">
-            <HeartPulse size={13} className="text-kiosk-teal" /> Kiosk
+            <HeartPulse size={13} className="text-kiosk-teal" /> Home
           </a>
         </div>
       </header>
@@ -211,7 +211,7 @@ function PortalPage() {
                   <div className="rounded-2xl border border-border/40 bg-white/80 p-6 text-center">
                     <CheckCircle2 size={32} className="mx-auto mb-2 text-kiosk-teal/40" />
                     <p className="text-sm font-bold text-kiosk-navy">No upcoming appointments</p>
-                    <p className="mt-1 text-xs font-medium text-foreground/45">Visit the kiosk to check in for today's OPD</p>
+                    <p className="mt-1 text-xs font-medium text-foreground/45">Book an appointment online to check in for today's OPD</p>
                   </div>
                 ) : (
                   upcoming.map((apt) => (

@@ -326,10 +326,6 @@ function App() {
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="border-t border-border/40 bg-white py-4 text-center">
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-foreground/40">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Emblem_of_India_with_transparent_background.png"
-            alt="Emblem of India" className="h-6 w-auto opacity-50" />
-          <span>Ayushman Bharat Digital Mission</span>
-          <span className="flex items-center gap-1"><ShieldCheck size={11} className="text-kiosk-green" /> ABDM Ready</span>
           <span>This system does not provide medical diagnosis.</span>
         </div>
       </footer>
@@ -345,7 +341,7 @@ function HomeView({ t, lang, setLang, onBook }: { t: T; lang: Lang; setLang: (l:
       {/* Hero */}
       <div className="text-center space-y-3 pt-4">
         <div className="inline-flex items-center gap-2 rounded-full bg-kiosk-teal/10 border border-kiosk-teal/20 px-4 py-1.5 text-xs font-bold text-kiosk-teal">
-          <span className="size-1.5 rounded-full bg-kiosk-teal animate-pulse" /> ABDM Ready · City Hospital
+          <span className="size-1.5 rounded-full bg-kiosk-teal animate-pulse" /> City Hospital OPD
         </div>
         <h1 className="text-4xl font-black tracking-tight text-kiosk-navy sm:text-5xl">
           Book your<br />appointment online
