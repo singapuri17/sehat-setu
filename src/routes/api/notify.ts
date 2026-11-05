@@ -1,11 +1,11 @@
-/**
+﻿/**
  * POST /api/notify
  *
  * Simulated SMS / email notification dispatcher.
  *
  * In production this would call:
- *   SMS  → Twilio / MSG91 / Kaleyra (popular in India)
- *   Email → SendGrid / Resend / AWS SES
+ *   SMS  â†’ Twilio / MSG91 / Kaleyra (popular in India)
+ *   Email â†’ SendGrid / Resend / AWS SES
  *
  * For the demo, this:
  *  1. Validates the payload
@@ -16,9 +16,9 @@
  *   appointmentId: string
  *   channel: "sms" | "email" | "both"
  *   message: string
- *   phone?: string       — required for sms
- *   email?: string       — required for email
- *   scheduledFor?: string — ISO datetime; if omitted, sends immediately
+ *   phone?: string       â€” required for sms
+ *   email?: string       â€” required for email
+ *   scheduledFor?: string â€” ISO datetime; if omitted, sends immediately
  * }
  */
 
@@ -49,7 +49,7 @@ export const APIRoute = createAPIFileRoute("/api/notify")({
 
     if (body.channel === "sms" || body.channel === "both") {
       // Simulate SMS dispatch
-      console.log(`[MediKiosk Notify] SMS → ${body.phone ?? "on-file"} | Apt: ${body.appointmentId}`);
+      console.log(`[MediEase Notify] SMS â†’ ${body.phone ?? "on-file"} | Apt: ${body.appointmentId}`);
       console.log(`  Message: ${body.message}`);
       results.push({
         channel: "sms",
@@ -62,7 +62,7 @@ export const APIRoute = createAPIFileRoute("/api/notify")({
 
     if (body.channel === "email" || body.channel === "both") {
       // Simulate email dispatch
-      console.log(`[MediKiosk Notify] Email → ${body.email ?? "on-file"} | Apt: ${body.appointmentId}`);
+      console.log(`[MediEase Notify] Email â†’ ${body.email ?? "on-file"} | Apt: ${body.appointmentId}`);
       console.log(`  Message: ${body.message}`);
       results.push({
         channel: "email",

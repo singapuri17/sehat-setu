@@ -1,9 +1,9 @@
-/**
- * /mobile — Patient's personal phone intake
+﻿/**
+ * /mobile â€” Patient's personal phone intake
  *
  * Entry points:
- *   /mobile                  → fresh mobile session (language select → full intake)
- *   /mobile?session=XXXX     → resume an existing session (kiosk→phone handoff)
+ *   /mobile                  â†’ fresh mobile session (language select â†’ full intake)
+ *   /mobile?session=XXXX     â†’ resume an existing session (kioskâ†’phone handoff)
  *
  * This is the SAME clinical intake engine as the kiosk.
  * Only differences: optimised for small screens, no kiosk chrome,
@@ -33,7 +33,7 @@ import {
 export const Route = createFileRoute("/mobile")({
   head: () => ({
     meta: [
-      { title: "MediKiosk — Mobile Pre-Consultation" },
+      { title: "MediEase â€” Mobile Pre-Consultation" },
       { name: "description", content: "Complete your pre-consultation on your phone before reaching the OPD counter." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
     ],
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/mobile")({
   }),
 });
 
-// ─── Types (shared with kiosk) ────────────────────────────────────────────────
+// â”€â”€â”€ Types (shared with kiosk) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type MobileView =
   | "loading"
@@ -60,7 +60,7 @@ type Complaint = "Fever" | "Abdominal pain" | "Headache" | "Cough" | "Chest pain
 
 const allergyQuestions: { question: string; choices?: string[] }[] = [
   { question: "Do you have any known allergies?", choices: ["No known allergies", "Medicine allergy", "Food allergy", "Dust / Pollen allergy", "Not sure"] },
-  { question: "Are you allergic to any medicines?", choices: ["No", "Yes — Penicillin / Antibiotics", "Yes — Painkillers (NSAIDs)", "Yes — Other medicines"] },
+  { question: "Are you allergic to any medicines?", choices: ["No", "Yes â€” Penicillin / Antibiotics", "Yes â€” Painkillers (NSAIDs)", "Yes â€” Other medicines"] },
 ];
 
 const interviewQuestions: Record<Complaint, { question: string; choices?: string[] }[]> = {
@@ -104,7 +104,7 @@ const interviewQuestions: Record<Complaint, { question: string; choices?: string
   ],
 };
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function MobilePage() {
   const { session: sessionParam } = useSearch({ from: "/mobile" });
@@ -131,7 +131,7 @@ function MobilePage() {
   const hasRedFlag = details.complaint === "Chest pain" &&
     Object.values(answers).some((a) => ["Severe", "Yes"].includes(a));
 
-  // ── Boot: resolve session ─────────────────────────────────────────────────
+  // â”€â”€ Boot: resolve session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const init = async () => {
       try {
@@ -189,7 +189,7 @@ function MobilePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details, answers, lang]);
 
-  // ── Speech ────────────────────────────────────────────────────────────────
+  // â”€â”€ Speech â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const startSpeech = async () => {
     setSpeechState("listening");
     setPendingVoice(null);
@@ -234,14 +234,14 @@ function MobilePage() {
     setProcessing(false);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (view === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-50 to-white">
         <div className="text-center">
           <div className="mx-auto size-14 animate-spin rounded-full border-4 border-kiosk-teal border-t-transparent" />
-          <p className="mt-4 text-sm font-bold text-kiosk-navy">Loading your session…</p>
+          <p className="mt-4 text-sm font-bold text-kiosk-navy">Loading your sessionâ€¦</p>
         </div>
       </div>
     );
@@ -253,9 +253,9 @@ function MobilePage() {
       <header className="sticky top-0 z-30 border-b border-border/40 bg-white/90 backdrop-blur-sm px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="MediKiosk" className="size-8 rounded-xl object-contain" />
+            <img src="/logo.png" alt="MediEase" className="size-8 rounded-xl object-contain" />
             <div>
-              <p className="text-sm font-black text-kiosk-navy">MediKiosk</p>
+              <p className="text-sm font-black text-kiosk-navy">MediEase</p>
               <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Mobile intake</p>
             </div>
           </div>
@@ -330,7 +330,7 @@ function MobilePage() {
   );
 }
 
-// ─── Mobile sub-screens ───────────────────────────────────────────────────────
+// â”€â”€â”€ Mobile sub-screens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function MobileWelcome({ t, lang, setLang, sessionId, onStart }: {
   t: T; lang: Lang; setLang: (l: Lang) => void; sessionId?: string; onStart: () => void;
@@ -339,12 +339,12 @@ function MobileWelcome({ t, lang, setLang, sessionId, onStart }: {
     <div className="mk-rise space-y-6 pt-2">
       <div className="text-center">
         <div className="relative mx-auto mb-4 size-20">
-          <img src="/logo.png" alt="MediKiosk" className="size-20 rounded-[18px] object-contain drop-shadow-xl" />
+          <img src="/logo.png" alt="MediEase" className="size-20 rounded-[18px] object-contain drop-shadow-xl" />
           <span className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-xl bg-kiosk-coral text-white shadow-md">
             <HeartPulse size={14} />
           </span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-kiosk-navy">MediKiosk</h1>
+        <h1 className="text-3xl font-black tracking-tight text-kiosk-navy">MediEase</h1>
         <p className="mt-1 text-sm font-bold text-kiosk-teal">{t("AI-assisted pre-consultation")}</p>
         <p className="mt-3 text-sm font-medium leading-relaxed text-foreground/60 max-w-xs mx-auto">
           Complete your pre-consultation on your phone before reaching the OPD counter.
@@ -382,7 +382,7 @@ function MobileWelcome({ t, lang, setLang, sessionId, onStart }: {
 
       <div className="flex items-center justify-center gap-2 text-xs font-semibold text-foreground/45">
         <ShieldCheck size={12} className="text-kiosk-green" />
-        {t("Safe, simple, patient-first · This kiosk does not provide a diagnosis")}
+        {t("Safe, simple, patient-first Â· This kiosk does not provide a diagnosis")}
       </div>
     </div>
   );
@@ -413,9 +413,9 @@ function MobileResume({ t, session, details, onContinue, onFresh }: {
           <div className="h-full rounded-full bg-kiosk-teal transition-all" style={{ width: `${pct}%` }} />
         </div>
         <div className="space-y-1 text-sm font-medium text-kiosk-navy">
-          {details.name && <p>👤 {details.name}{details.age ? `, ${details.age}y` : ""}</p>}
-          {details.gender && <p>⚧ {details.gender}</p>}
-          {details.complaint && <p>🩺 {details.complaint}</p>}
+          {details.name && <p>ðŸ‘¤ {details.name}{details.age ? `, ${details.age}y` : ""}</p>}
+          {details.gender && <p>âš§ {details.gender}</p>}
+          {details.complaint && <p>ðŸ©º {details.complaint}</p>}
         </div>
       </div>
 
@@ -437,7 +437,7 @@ function MobileConsent({ t, lang, consent, setConsent, onBack, onContinue }: {
   return (
     <div className="mk-rise space-y-5">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 1 · Privacy</p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 1 Â· Privacy</p>
         <h2 className="text-2xl font-black text-kiosk-navy">{t("Can we collect your health details?")}</h2>
         <p className="mt-2 text-sm font-medium leading-relaxed text-foreground/60">
           {t("We will use your answers and previous records to prepare your consultation history.")}
@@ -475,7 +475,7 @@ function MobileDetails({ t, lang, details, setDetails, onBack, onContinue }: {
   return (
     <div className="mk-rise space-y-5">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 2 · About you</p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 2 Â· About you</p>
         <h2 className="text-2xl font-black text-kiosk-navy">{t("Tell us about yourself")}</h2>
       </div>
       <div className="space-y-4">
@@ -543,7 +543,7 @@ function MobileInterview({ t, lang, details, currentQuestion, questionIndex, que
     <div className="mk-rise space-y-5">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral">Step 3 · Questions</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral">Step 3 Â· Questions</p>
           <span className="text-xs font-bold text-foreground/45">{questionIndex + 1} / {total}</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-border mb-4">
@@ -568,7 +568,7 @@ function MobileInterview({ t, lang, details, currentQuestion, questionIndex, que
 
       {pendingVoice && (
         <div className="rounded-2xl border-2 border-kiosk-yellow/50 bg-kiosk-yellow/10 p-4">
-          <p className="text-xs font-black uppercase text-kiosk-yellow/80 mb-1">🎙 {t("Did you mean this?")}</p>
+          <p className="text-xs font-black uppercase text-kiosk-yellow/80 mb-1">ðŸŽ™ {t("Did you mean this?")}</p>
           <p className="text-lg font-black text-kiosk-navy">"{pendingVoice}"</p>
           <div className="mt-3 flex gap-2">
             <Button onClick={onConfirmVoice} size="sm" className="flex-1 rounded-xl bg-kiosk-teal text-white font-black hover:bg-kiosk-teal/90">
@@ -590,7 +590,7 @@ function MobileInterview({ t, lang, details, currentQuestion, questionIndex, que
         </button>
         <div>
           <p className="text-sm font-black text-kiosk-navy">
-            {speechState === "listening" ? t("Listening…") : speechState === "processing" ? t("Understanding…") : t("Speak")}
+            {speechState === "listening" ? t("Listeningâ€¦") : speechState === "processing" ? t("Understandingâ€¦") : t("Speak")}
           </p>
           {transcription && <p className="text-xs text-foreground/50 mt-0.5">{transcription}</p>}
         </div>
@@ -630,7 +630,7 @@ function MobileDocuments({ t, documents, setDocuments, processing, extracted, pr
   return (
     <div className="mk-rise space-y-5">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 4 · Documents</p>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-kiosk-coral mb-1">Step 4 Â· Documents</p>
         <h2 className="text-2xl font-black text-kiosk-navy">{t("Do you have old medical papers?")}</h2>
         <p className="mt-1 text-sm font-medium text-foreground/55">Upload photos of prescriptions or lab reports.</p>
       </div>
@@ -638,7 +638,7 @@ function MobileDocuments({ t, documents, setDocuments, processing, extracted, pr
       <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-kiosk-teal/35 bg-kiosk-teal/5 transition-all hover:border-kiosk-teal/60">
         <Upload className="mb-2 text-kiosk-teal" size={24} />
         <span className="text-sm font-black text-kiosk-navy">Tap to upload</span>
-        <span className="mt-1 text-xs font-medium text-foreground/45">PDF · JPG · PNG</span>
+        <span className="mt-1 text-xs font-medium text-foreground/45">PDF Â· JPG Â· PNG</span>
         <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={addDoc} />
       </label>
 
@@ -655,7 +655,7 @@ function MobileDocuments({ t, documents, setDocuments, processing, extracted, pr
       {documents.length > 0 && !extracted && (
         <Button onClick={processDocuments} disabled={processing} variant="outline"
           className="w-full min-h-12 rounded-2xl border-kiosk-teal/40 font-bold text-kiosk-navy hover:bg-kiosk-teal/5">
-          {processing ? <><RefreshCw size={16} className="animate-spin" /> Processing…</> : "Extract information"}
+          {processing ? <><RefreshCw size={16} className="animate-spin" /> Processingâ€¦</> : "Extract information"}
         </Button>
       )}
 
@@ -701,7 +701,7 @@ function MobileComplete({ t, sessionId, name }: { t: T; sessionId: string; name:
 
       <div className="flex items-center gap-2 text-xs font-semibold text-foreground/40">
         <ShieldCheck size={13} className="text-kiosk-green" />
-        No diagnosis provided · For physician review only
+        No diagnosis provided Â· For physician review only
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
-/**
- * /portal — Patient Appointment Portal
+﻿/**
+ * /portal â€” Patient Appointment Portal
  *
  * Entry points:
- *   /portal                    → phone number lookup form
- *   /portal?phone=9876543210   → direct load by phone (from QR on success screen)
+ *   /portal                    â†’ phone number lookup form
+ *   /portal?phone=9876543210   â†’ direct load by phone (from QR on success screen)
  *
  * Shows:
  *   - Upcoming appointment card with queue position + live countdown
@@ -32,7 +32,7 @@ import { QRCodeSVG } from "qrcode.react";
 export const Route = createFileRoute("/portal")({
   head: () => ({
     meta: [
-      { title: "MediKiosk — My Appointments & Health Portal" },
+      { title: "MediEase â€” My Appointments & Health Portal" },
       { name: "description", content: "Check your appointment status, queue position, reminders and follow-ups." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
     ],
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/portal")({
   }),
 });
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PortalPage() {
   const { phone: phoneParam } = useSearch({ from: "/portal" });
@@ -104,9 +104,9 @@ function PortalPage() {
       <header className="sticky top-0 z-30 border-b border-border/40 bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="MediKiosk" className="size-9 rounded-xl object-contain" />
+            <img src="/logo.png" alt="MediEase" className="size-9 rounded-xl object-contain" />
             <div>
-              <p className="text-sm font-black text-kiosk-navy">MediKiosk</p>
+              <p className="text-sm font-black text-kiosk-navy">MediEase</p>
               <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Patient Portal</p>
             </div>
           </div>
@@ -118,7 +118,7 @@ function PortalPage() {
 
       <main className="mx-auto max-w-2xl px-4 py-6 pb-20 space-y-5">
 
-        {/* ── Phone lookup form ──────────────────────────────────────────── */}
+        {/* â”€â”€ Phone lookup form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="rounded-3xl border-2 border-kiosk-teal/20 bg-white/90 p-5 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="grid size-10 place-items-center rounded-2xl bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/25">
@@ -167,14 +167,14 @@ function PortalPage() {
           </div>
         </div>
 
-        {/* ── Toast notification ─────────────────────────────────────────── */}
+        {/* â”€â”€ Toast notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {notifSent && (
           <div className="flex items-center gap-2 rounded-2xl bg-kiosk-teal/10 border border-kiosk-teal/20 px-4 py-3 text-sm font-bold text-kiosk-teal mk-rise">
             <CheckCircle2 size={16} /> {notifSent}
           </div>
         )}
 
-        {/* ── Results ────────────────────────────────────────────────────── */}
+        {/* â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {appointments.length > 0 && (
           <>
             {/* Patient summary bar */}
@@ -185,7 +185,7 @@ function PortalPage() {
               <div>
                 <p className="text-sm font-black text-white">{appointments[0]?.patientName}</p>
                 <p className="text-xs font-medium text-white/55">
-                  {appointments[0]?.patientAge}y · {appointments[0]?.patientGender} · {phone}
+                  {appointments[0]?.patientAge}y Â· {appointments[0]?.patientGender} Â· {phone}
                 </p>
               </div>
               <span className="ml-auto text-xs font-bold text-white/40">{appointments.length} appointment{appointments.length !== 1 ? "s" : ""}</span>
@@ -204,7 +204,7 @@ function PortalPage() {
               ))}
             </div>
 
-            {/* ── Upcoming appointments ───────────────────────────────────── */}
+            {/* â”€â”€ Upcoming appointments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             {activeTab === "upcoming" && (
               <div className="space-y-4">
                 {upcoming.length === 0 ? (
@@ -221,7 +221,7 @@ function PortalPage() {
               </div>
             )}
 
-            {/* ── Past appointments ───────────────────────────────────────── */}
+            {/* â”€â”€ Past appointments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             {activeTab === "history" && (
               <div className="space-y-4">
                 {past.length === 0 ? (
@@ -239,7 +239,7 @@ function PortalPage() {
           </>
         )}
 
-        {/* ── Empty state / landing ──────────────────────────────────────── */}
+        {/* â”€â”€ Empty state / landing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {!phone && appointments.length === 0 && (
           <div className="space-y-4">
             <div className="rounded-3xl border border-border/40 bg-white/80 p-6 text-center space-y-3">
@@ -266,7 +266,7 @@ function PortalPage() {
             </div>
             <div className="flex items-center justify-center gap-2 text-xs font-semibold text-foreground/40">
               <ShieldCheck size={12} className="text-kiosk-green" />
-              Your data is private and secure · Ayushman Bharat Digital Mission
+              Your data is private and secure Â· Ayushman Bharat Digital Mission
             </div>
           </div>
         )}
@@ -275,7 +275,7 @@ function PortalPage() {
   );
 }
 
-// ─── Appointment card (upcoming) ──────────────────────────────────────────────
+// â”€â”€â”€ Appointment card (upcoming) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AppointmentCard({
   apt, onSendReminder,
@@ -368,7 +368,7 @@ function AppointmentCard({
             {/* Location */}
             <div className="flex items-center gap-2 text-sm text-foreground/60">
               <MapPin size={14} className="text-kiosk-coral shrink-0" />
-              <span className="font-medium">City Hospital, OPD Block A · Ground Floor</span>
+              <span className="font-medium">City Hospital, OPD Block A Â· Ground Floor</span>
             </div>
 
             {/* Notes */}
@@ -390,7 +390,7 @@ function AppointmentCard({
                       : <Timer size={12} className="text-kiosk-yellow shrink-0" />
                     }
                     <span className="font-medium capitalize">{rem.channel}</span>
-                    <span className="text-foreground/35">—</span>
+                    <span className="text-foreground/35">â€”</span>
                     <span>{rem.status === "sent" ? "Sent" : `Scheduled ${new Date(rem.scheduledFor).toLocaleDateString()}`}</span>
                   </div>
                 ))}
@@ -423,7 +423,7 @@ function AppointmentCard({
   );
 }
 
-// ─── Past appointment card ────────────────────────────────────────────────────
+// â”€â”€â”€ Past appointment card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PastAppointmentCard({
   apt, onSendFollowUpReminder,
@@ -443,7 +443,7 @@ function PastAppointmentCard({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-black text-kiosk-navy">{apt.doctor}</p>
-          <p className="text-xs font-medium text-foreground/50">{apt.date} · {apt.timeSlot} · {apt.complaint}</p>
+          <p className="text-xs font-medium text-foreground/50">{apt.date} Â· {apt.timeSlot} Â· {apt.complaint}</p>
         </div>
         {pendingFollowUps.length > 0 && (
           <span className="shrink-0 rounded-full bg-kiosk-coral/15 border border-kiosk-coral/20 px-2 py-0.5 text-[10px] font-black text-kiosk-coral">
@@ -506,7 +506,7 @@ function PastAppointmentCard({
           {/* Token badge */}
           <div className="flex items-center gap-2 text-xs text-foreground/40">
             <BadgeCheck size={13} className="text-kiosk-teal" />
-            <span>Token {apt.token} · {apt.department}</span>
+            <span>Token {apt.token} Â· {apt.department}</span>
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * sessionService.ts
  *
- * Lightweight client-side session management for MediKiosk.
+ * Lightweight client-side session management for MediEase.
  *
  * A "session" ties together a patient's in-progress or completed clinical
  * intake regardless of which channel they used (kiosk or mobile).
@@ -23,7 +23,7 @@ export interface MediSession {
   lang: string;
   createdAt: number; // epoch ms
   updatedAt: number;
-  /** Partial intake data — populated as the patient progresses */
+  /** Partial intake data â€” populated as the patient progresses */
   data: Partial<{
     name: string;
     age: string;
@@ -34,9 +34,9 @@ export interface MediSession {
   }>;
 }
 
-const SESSION_KEY = "medikiosk_session_id";
+const SESSION_KEY = "MediEase_session_id";
 
-// ─── ID generation ─────────────────────────────────────────────────────────
+// â”€â”€â”€ ID generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function randomId(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // unambiguous charset
@@ -47,7 +47,7 @@ function randomId(): string {
   return id;
 }
 
-// ─── Local storage helpers ──────────────────────────────────────────────────
+// â”€â”€â”€ Local storage helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function getLocalSessionId(): string | null {
   try {
@@ -61,7 +61,7 @@ export function setLocalSessionId(id: string): void {
   try {
     localStorage.setItem(SESSION_KEY, id);
   } catch {
-    /* storage unavailable — kiosk still works without persistence */
+    /* storage unavailable â€” kiosk still works without persistence */
   }
 }
 
@@ -71,7 +71,7 @@ export function clearLocalSession(): void {
   } catch { /* noop */ }
 }
 
-// ─── API helpers ────────────────────────────────────────────────────────────
+// â”€â”€â”€ API helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Create a new session on the server and persist its ID locally. */
 export async function createSession(
@@ -116,6 +116,6 @@ export function mobileUrl(sessionId: string): string {
   const base =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://medikiosk.vercel.app";
+      : "https://MediEase.vercel.app";
   return `${base}/mobile?session=${sessionId}`;
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * appointmentService.ts
  *
  * Data models, demo data, and client-side helpers for the appointment,
@@ -8,7 +8,7 @@
  * For the demo, /api/appointment uses an in-memory store.
  */
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type AppointmentStatus =
   | "scheduled"   // Booked, not yet attended
@@ -25,8 +25,8 @@ export interface Reminder {
   id: string;
   appointmentId: string;
   channel: ReminderChannel;
-  scheduledFor: string;   // ISO datetime — when to send
-  sentAt?: string;        // ISO datetime — when actually sent
+  scheduledFor: string;   // ISO datetime â€” when to send
+  sentAt?: string;        // ISO datetime â€” when actually sent
   status: ReminderStatus;
   message: string;
 }
@@ -50,7 +50,7 @@ export interface Appointment {
   phone: string;          // Mobile number for SMS
   email: string;          // Email for email reminders
   complaint: string;
-  department: string;     // e.g. "OPD — General"
+  department: string;     // e.g. "OPD â€” General"
   doctor: string;         // e.g. "Dr. M. Rao"
   date: string;           // ISO date "YYYY-MM-DD"
   timeSlot: string;       // e.g. "10:30 AM"
@@ -65,7 +65,7 @@ export interface Appointment {
   notes: string;
 }
 
-// ─── Demo data ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Demo data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TODAY = new Date().toISOString().slice(0, 10);
 const TOMORROW = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
@@ -81,7 +81,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9876543210",
     email: "rahul.patel@example.com",
     complaint: "Abdominal pain",
-    department: "OPD — General",
+    department: "OPD â€” General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "09:30 AM",
@@ -90,7 +90,7 @@ export const demoAppointments: Appointment[] = [
     estimatedWait: 14,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     updatedAt: new Date().toISOString(),
-    notes: "Pre-consultation completed via MediKiosk. Hemoglobin below reference range.",
+    notes: "Pre-consultation completed via MediEase. Hemoglobin below reference range.",
     reminders: [
       {
         id: "REM-001",
@@ -113,7 +113,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9845012345",
     email: "meena.shah@example.com",
     complaint: "Cough",
-    department: "OPD — General",
+    department: "OPD â€” General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "10:00 AM",
@@ -145,7 +145,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9123456789",
     email: "arjun.desai@example.com",
     complaint: "Headache",
-    department: "OPD — General",
+    department: "OPD â€” General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "10:30 AM",
@@ -167,7 +167,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9900112233",
     email: "priya.mehta@example.com",
     complaint: "Fever",
-    department: "OPD — General",
+    department: "OPD â€” General",
     doctor: "Dr. M. Rao",
     date: TODAY,
     timeSlot: "09:00 AM",
@@ -193,7 +193,7 @@ export const demoAppointments: Appointment[] = [
         id: "FU-001",
         appointmentId: "APT-0100",
         scheduledDate: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
-        reason: "Review fever — check if resolved",
+        reason: "Review fever â€” check if resolved",
         doctorNote: "Prescribed paracetamol 500mg TDS for 3 days. Return if fever persists beyond 5 days.",
         status: "scheduled",
         reminders: [
@@ -218,7 +218,7 @@ export const demoAppointments: Appointment[] = [
     phone: "9811223344",
     email: "suresh.kumar@example.com",
     complaint: "Chest pain",
-    department: "OPD — Cardiology",
+    department: "OPD â€” Cardiology",
     doctor: "Dr. M. Rao",
     date: YESTERDAY,
     timeSlot: "08:30 AM",
@@ -252,7 +252,7 @@ export const demoAppointments: Appointment[] = [
   },
 ];
 
-// ─── Client helpers ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Client helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Get all appointments from the server. Falls back to local store in dev. */
 export async function getAppointments(): Promise<Appointment[]> {
@@ -278,7 +278,7 @@ export async function getAppointmentByPhone(phone: string): Promise<Appointment[
   return _localStore.filter((a) => a.phone === phone);
 }
 
-// ─── Client-side fallback store (used in dev when API routes return 404) ─────
+// â”€â”€â”€ Client-side fallback store (used in dev when API routes return 404) â”€â”€â”€â”€â”€
 
 let _localCounter = 200;
 const _localStore: Appointment[] = [...demoAppointments];
@@ -321,7 +321,7 @@ export async function createAppointment(
       body: JSON.stringify(data),
     });
     if (res.ok) return (await res.json()) as Appointment;
-    // API unavailable (e.g. Vite dev mode) — use local fallback
+    // API unavailable (e.g. Vite dev mode) â€” use local fallback
     console.warn("[appointmentService] API unavailable, using local fallback");
     return makeLocalAppointment(data);
   } catch {
@@ -343,7 +343,7 @@ export async function updateAppointment(
     });
     if (res.ok) return (await res.json()) as Appointment;
   } catch { /* noop */ }
-  // Local fallback — mutate _localStore
+  // Local fallback â€” mutate _localStore
   const idx = _localStore.findIndex((a) => a.id === id);
   if (idx !== -1) {
     _localStore[idx] = { ..._localStore[idx], ...patch, updatedAt: new Date().toISOString() };
@@ -367,8 +367,8 @@ export async function sendReminder(
     });
     if (res.ok) return (await res.json()) as { success: boolean; message: string };
   } catch { /* noop */ }
-  // Dev fallback — log and pretend it worked
-  console.info(`[notify-dev] ${channel.toUpperCase()} → Apt ${appointmentId}: ${message}`);
+  // Dev fallback â€” log and pretend it worked
+  console.info(`[notify-dev] ${channel.toUpperCase()} â†’ Apt ${appointmentId}: ${message}`);
   return { success: true, message: `[Dev] ${channel} notification simulated` };
 }
 

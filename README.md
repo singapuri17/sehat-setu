@@ -1,14 +1,14 @@
-# MediKiosk — Digital Health & Appointment System
+﻿# MediEase â€” Digital Health & Appointment System
 
-**SIH 2026 · Problem Statement: Digital Health Monitoring and Appointment Support System**
+**SIH 2026 Â· Problem Statement: Digital Health Monitoring and Appointment Support System**
 
 > Long waiting times, difficulty managing appointments, lack of timely reminders and limited access to basic health information.
 
 ---
 
-## What MediKiosk does
+## What MediEase does
 
-MediKiosk is a multimodal digital health platform for busy Indian public healthcare facilities. It addresses the SIH problem statement directly:
+MediEase is a multimodal digital health platform for busy Indian public healthcare facilities. It addresses the SIH problem statement directly:
 
 | Feature | How |
 |---|---|
@@ -17,7 +17,7 @@ MediKiosk is a multimodal digital health platform for busy Indian public healthc
 | **Timely reminders** | SMS + Email reminders sent day-before and on the day (via `/api/notify`) |
 | **Follow-up scheduling** | Doctor books follow-up from dashboard; patient gets automatic reminder |
 | **Basic health info access** | Pre-consultation history, doctor notes, lab extracts all available on patient portal |
-| **AI-assisted intake** | Voice + touch clinical history in English / हिन्दी / ગુજરાતી via Bhashini |
+| **AI-assisted intake** | Voice + touch clinical history in English / à¤¹à¤¿à¤¨à¥à¤¦à¥€ / àª—à«àªœàª°àª¾àª¤à«€ via Bhashini |
 | **Kiosk + Mobile** | Same engine served via hospital kiosk OR patient's own phone (QR scan) |
 
 ---
@@ -26,12 +26,12 @@ MediKiosk is a multimodal digital health platform for busy Indian public healthc
 
 | URL | Purpose |
 |---|---|
-| `/` | Hospital kiosk — full pre-consultation + appointment creation |
+| `/` | Hospital kiosk â€” full pre-consultation + appointment creation |
 | `/mobile` | Patient's phone intake (same clinical engine) |
-| `/portal` | **Patient portal** — appointments, queue position, reminders, follow-ups |
+| `/portal` | **Patient portal** â€” appointments, queue position, reminders, follow-ups |
 | `/api/appointment` | Appointment CRUD (GET / POST / PATCH) |
 | `/api/notify` | SMS / Email reminder dispatch (simulated; wire Twilio/MSG91 for prod) |
-| `/api/session` | Session management for kiosk↔phone handoff |
+| `/api/session` | Session management for kioskâ†”phone handoff |
 | `/api/bhashini` | Bhashini Dhruva ASR proxy (Hindi / Gujarati voice) |
 | `/api/bhashini-tts` | Bhashini Dhruva TTS proxy |
 | `/api/whisper` | OpenAI Whisper ASR fallback (English) |
@@ -62,19 +62,19 @@ This is a prototype. It does **not** provide medical diagnosis or treatment reco
 
 ```sh
 git clone <this-repository-url>
-cd medikiosk-ayush
+cd MediEase-ayush
 bun install
 bun run dev
 ```
 
 Open `http://localhost:8080`.
 
-Built with [Lovable](https://lovable.dev) · **Live app**: https://medikiosk-ayush.lovable.app
+Built with [Lovable](https://lovable.dev) Â· **Live app**: https://MediEase-ayush.lovable.app
 
 
 PROJECT PURPOSE:
 
-MediKiosk is an AI-assisted pre-consultation patient intake system for crowded Indian hospitals. The goal of this prototype is to demonstrate how a patient can use a self-service kiosk to provide medical history through voice/touch interaction, upload previous medical documents, and have the resulting structured patient case delivered to a doctor before consultation.
+MediEase is an AI-assisted pre-consultation patient intake system for crowded Indian hospitals. The goal of this prototype is to demonstrate how a patient can use a self-service kiosk to provide medical history through voice/touch interaction, upload previous medical documents, and have the resulting structured patient case delivered to a doctor before consultation.
 
 IMPORTANT:
 
@@ -130,7 +130,7 @@ MAIN PATIENT FLOW:
 
 Display:
 
-"MediKiosk"
+"MediEase"
 
 "AI-assisted pre-consultation"
 
@@ -142,9 +142,9 @@ Language buttons:
 
 - English
 
-- हिन्दी
+- à¤¹à¤¿à¤¨à¥à¤¦à¥€
 
-- ગુજરાતી
+- àª—à«àªœàª°àª¾àª¤à«€
 
 Button:
 
@@ -268,17 +268,17 @@ VOICE PLACEHOLDER:
 
 Create a microphone interaction that visually changes between:
 
-Idle → Listening → Processing → Result.
+Idle â†’ Listening â†’ Processing â†’ Result.
 
 For now, provide a mock transcription fallback so the full demo can run even without an external speech API.
 
 Example mock voice answer:
 
-"મને કાલથી પેટમાં દુખાવો છે"
+"àª®àª¨à«‡ àª•àª¾àª²àª¥à«€ àªªà«‡àªŸàª®àª¾àª‚ àª¦à«àª–àª¾àªµà«‹ àª›à«‡"
 
 Show:
 
-"Transcription: મને કાલથી પેટમાં દુખાવો છે"
+"Transcription: àª®àª¨à«‡ àª•àª¾àª²àª¥à«€ àªªà«‡àªŸàª®àª¾àª‚ àª¦à«àª–àª¾àªµà«‹ àª›à«‡"
 
 Create a service abstraction called speechService so Bhashini ASR can be connected later without redesigning the UI.
 
@@ -306,15 +306,15 @@ Show uploaded documents as cards.
 
 Example:
 
-✓ Blood_Report.pdf
+âœ“ Blood_Report.pdf
 
-✓ Prescription.jpg
+âœ“ Prescription.jpg
 
 Include a "Process documents" button.
 
 For the prototype, create a realistic document-processing animation:
 
-Uploading → Extracting text → Identifying medical information → Complete
+Uploading â†’ Extracting text â†’ Identifying medical information â†’ Complete
 
 Create a documentService abstraction so OCR/Gemini Vision can be connected later.
 
@@ -334,7 +334,7 @@ Metformin 500 mg
 
 Lab results:
 
-Hemoglobin — 10.8 g/dL
+Hemoglobin â€” 10.8 g/dL
 
 Status: Below reference range
 
@@ -470,13 +470,13 @@ AI-GENERATED SUMMARY
 
 Each AI-generated section must display a small label:
 
-"AI-generated draft — physician verification required."
+"AI-generated draft â€” physician verification required."
 
 Add source indicators where possible:
 
-🎤 Patient interview
+ðŸŽ¤ Patient interview
 
-📄 Uploaded document
+ðŸ“„ Uploaded document
 
 Allow doctor to edit information.
 
@@ -492,13 +492,13 @@ Create a clean vertical timeline.
 
 Example:
 
-2024 — Diabetes diagnosed
+2024 â€” Diabetes diagnosed
 
-2025 — Prescription uploaded
+2025 â€” Prescription uploaded
 
-2026 — Blood test
+2026 â€” Blood test
 
-2026 — Current complaint
+2026 â€” Current complaint
 
 13. DEMO DATA
 
@@ -546,7 +546,7 @@ Do not claim that AI information is medically verified.
 
 Clearly show:
 
-"AI-generated draft — physician verification required."
+"AI-generated draft â€” physician verification required."
 
 16. PROTOTYPE PRIORITY
 
@@ -554,27 +554,27 @@ Prioritize the following end-to-end flow above everything else:
 
 Patient Welcome
 
-→ Language
+â†’ Language
 
-→ Consent
+â†’ Consent
 
-→ Patient Details
+â†’ Patient Details
 
-→ Adaptive Questions
+â†’ Adaptive Questions
 
-→ Document Upload
+â†’ Document Upload
 
-→ Extracted Information
+â†’ Extracted Information
 
-→ Patient Review
+â†’ Patient Review
 
-→ Send to Doctor
+â†’ Send to Doctor
 
-→ Doctor Dashboard
+â†’ Doctor Dashboard
 
-→ Doctor Case View
+â†’ Doctor Case View
 
-→ Doctor Verification
+â†’ Doctor Verification
 
 Do NOT build:
 
@@ -600,7 +600,7 @@ Make the prototype feel like a realistic deployable product while keeping the im
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://medikiosk-ayush.lovable.app
+**Live app**: https://MediEase-ayush.lovable.app
 
 ## Build with Lovable
 
@@ -612,7 +612,7 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Prefer working locally? You need Node.js and npm â€” [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
 git clone <this-repository-url>
