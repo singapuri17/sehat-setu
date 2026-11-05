@@ -591,7 +591,22 @@ function BookView({ onBooked }: { onBooked: () => void }) {
       setError("Patient name and 10-digit mobile number are required.");
       return;
     }
+    // Check slot capacity from staff settings
+    let capacity = 10; let allowOverbooking = true;
+    try {
+      capacity = parseInt(localStorage.getItem("mediease_slot_capacity") || "10", 10);
+      allowOverbooking = localStorage.getItem("mediease_overbooking") !== "false";
+    } catch { /* noop */ }
+    const allAppts = await getAppointments();
+    const sameSlot = allAppts.filter((a) => a.date === form.date && a.timeSlot === form.timeSlot && !["cancelled","no-show","completed"].includes(a.status));
+    if (sameSlot.length >= capacity && !allowOverbooking) {
+      setError(`Slot ${form.timeSlot} on ${form.date} is full (${capacity} patients). Please choose a different time slot or adjust capacity in Settings.`);
+      return;
+    }
     setLoading(true); setError(null);
+    if (sameSlot.length >= capacity) {
+      console.warn(`[MediEase] Overbooking: slot ${form.timeSlot} has ${sameSlot.length} bookings (capacity ${capacity})`);
+    }
     try {
       const apt = await createAppointment({
         ...form,
@@ -865,7 +880,28 @@ function StaffSettingsView() {
   const [onDay, setOnDay]         = useState(true);
   const [saved, setSaved]         = useState(false);
 
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 3000); };
+  // Slot capacity settings — persisted to localStorage
+  const [slotCapacity, setSlotCapacity] = useState(() => {
+    try { return parseInt(localStorage.getItem("mediease_slot_capacity") || "10", 10); }
+    catch { return 10; }
+  });
+  const [overbooking, setOverbooking] = useState(() => {
+    try { return localStorage.getItem("mediease_overbooking") === "false" ? false : true; }
+    catch { return true; }
+  });
+  const [bufferTime, setBufferTime] = useState(() => {
+    try { return parseInt(localStorage.getItem("mediease_buffer_min") || "15", 10); }
+    catch { return 15; }
+  });
+
+  const save = () => {
+    try {
+      localStorage.setItem("mediease_slot_capacity", String(slotCapacity));
+      localStorage.setItem("mediease_overbooking", String(overbooking));
+      localStorage.setItem("mediease_buffer_min", String(bufferTime));
+    } catch { /* noop */ }
+    setSaved(true); setTimeout(() => setSaved(false), 3000);
+  };
 
   return (
     <div className="max-w-xl space-y-5">
@@ -877,13 +913,89 @@ function StaffSettingsView() {
         </div>
       )}
 
+      {/* Slot capacity */}
+      <div className="rounded-2xl border border-kiosk-coral/25 bg-kiosk-coral/3 p-5 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+          <AlertTriangle size={15} className="text-kiosk-coral" />
+          <p className="text-xs font-black uppercase tracking-wide text-foreground/40">Slot Capacity Control</p>
+        </div>
+        <p className="text-sm font-medium text-foreground/55 -mt-1">
+          Set a limit on how many patients can book the same time slot. Prevents overcrowding and long waiting times.
+        </p>
+
+        {/* Max per slot */}
+        <div>
+          <label className="text-[11px] font-black uppercase tracking-wide text-foreground/50">Max patients per time slot</label>
+          <div className="mt-1.5 flex items-center gap-3">
+            <input type="range" min="1" max="50" value={slotCapacity}
+              onChange={(e) => setSlotCapacity(parseInt(e.target.value, 10))}
+              className="flex-1 accent-kiosk-teal" />
+            <div className="flex items-center gap-1 shrink-0">
+              <Input type="number" min="1" max="100" value={slotCapacity}
+                onChange={(e) => setSlotCapacity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20 h-9 rounded-xl border-border/60 text-center text-sm font-bold" />
+              <span className="text-xs font-bold text-foreground/45">patients</span>
+            </div>
+          </div>
+          <p className="mt-1.5 text-[11px] font-medium text-foreground/40">
+            {slotCapacity} patient{slotCapacity !== 1 ? "s" : ""} can book the same time slot before it shows as full.
+          </p>
+        </div>
+
+        {/* Overbooking action */}
+        <div>
+          <label className="text-[11px] font-black uppercase tracking-wide text-foreground/50">When a slot is full</label>
+          <div className="mt-1.5 space-y-2">
+            <button onClick={() => setOverbooking(true)}
+              className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${!overbooking ? "border-kiosk-teal bg-kiosk-teal/5" : "border-border/50"}`}>
+              <div className={`size-4 rounded-full border-2 shrink-0 flex items-center justify-center ${!overbooking ? "border-kiosk-teal bg-kiosk-teal" : "border-border"}`}>
+                {!overbooking && <div className="size-2 rounded-full bg-white" />}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-kiosk-navy">Allow overbooking with warning</p>
+                <p className="text-xs font-medium text-foreground/45">Staff can still book but sees a warning that the slot is full</p>
+              </div>
+            </button>
+            <button onClick={() => setOverbooking(false)}
+              className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${overbooking ? "border-kiosk-teal bg-kiosk-teal/5" : "border-border/50"}`}>
+              <div className={`size-4 rounded-full border-2 shrink-0 flex items-center justify-center ${overbooking ? "border-kiosk-teal bg-kiosk-teal" : "border-border"}`}>
+                {overbooking && <div className="size-2 rounded-full bg-white" />}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-kiosk-navy">Block booking — slot full</p>
+                <p className="text-xs font-medium text-foreground/45">Prevent any more bookings for a full slot</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Buffer time */}
+        <div>
+          <label className="text-[11px] font-black uppercase tracking-wide text-foreground/50">Estimated time per patient (minutes)</label>
+          <div className="mt-1.5 flex items-center gap-3">
+            <input type="range" min="5" max="60" value={bufferTime}
+              onChange={(e) => setBufferTime(parseInt(e.target.value, 10))}
+              className="flex-1 accent-kiosk-teal" />
+            <div className="flex items-center gap-1 shrink-0">
+              <Input type="number" min="1" max="120" value={bufferTime}
+                onChange={(e) => setBufferTime(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20 h-9 rounded-xl border-border/60 text-center text-sm font-bold" />
+              <span className="text-xs font-bold text-foreground/45">min</span>
+            </div>
+          </div>
+          <p className="mt-1.5 text-[11px] font-medium text-foreground/40">
+            Used to calculate estimated wait times. {bufferTime} min per patient means a patient at position #5 waits ~{bufferTime * 5} min.
+          </p>
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-border/50 bg-white p-5 shadow-sm space-y-4">
         <p className="text-xs font-black uppercase tracking-wide text-foreground/40 border-b border-border/40 pb-2">Automatic Reminders</p>
         {[
-          { label: "SMS â€” auto-send on booking",       desc: "Send SMS confirmation when appointment is booked", value: smsAuto,   set: setSmsAuto   },
-          { label: "Email â€” auto-send on booking",     desc: "Send email confirmation when appointment is booked", value: emailAuto, set: setEmailAuto },
-          { label: "SMS reminder â€” day before visit",  desc: "Remind patient the day before their appointment",  value: dayBefore, set: setDayBefore },
-          { label: "SMS reminder â€” morning of visit",  desc: "Remind patient on the morning of their appointment", value: onDay,    set: setOnDay     },
+          { label: "SMS — auto-send on booking",       desc: "Send SMS confirmation when appointment is booked", value: smsAuto,   set: setSmsAuto   },
+          { label: "Email — auto-send on booking",     desc: "Send email confirmation when appointment is booked", value: emailAuto, set: setEmailAuto },
+          { label: "SMS reminder — day before visit",  desc: "Remind patient the day before their appointment",  value: dayBefore, set: setDayBefore },
+          { label: "SMS reminder — morning of visit",  desc: "Remind patient on the morning of their appointment", value: onDay,    set: setOnDay     },
         ].map(({ label, desc, value, set }) => (
           <div key={label} className="flex items-center justify-between gap-4">
             <div>
@@ -916,7 +1028,7 @@ function StaffSettingsView() {
         <ShieldCheck size={16} /> Save Settings
       </Button>
 
-      <p className="text-center text-xs font-medium text-foreground/35">Demo mode â€” settings not persisted between sessions</p>
+      <p className="text-center text-xs font-medium text-foreground/35">Settings saved to this browser</p>
     </div>
   );
 }

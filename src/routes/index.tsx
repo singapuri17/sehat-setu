@@ -188,6 +188,17 @@ function App() {
 
   const handleSubmit = async () => {
     setBooking(true); setBookError(null);
+    // Check slot capacity from staff settings
+    let capacity = 10;
+    try { capacity = parseInt(localStorage.getItem("mediease_slot_capacity") || "10", 10); } catch { /* noop */ }
+    const { getAppointments } = await import("@/lib/appointmentService");
+    const allAppts = await getAppointments();
+    const sameSlot = allAppts.filter((a) => a.date === form.date && a.timeSlot === form.timeSlot && !["cancelled","no-show","completed"].includes(a.status));
+    if (sameSlot.length >= capacity) {
+      setBookError(`This time slot (${form.timeSlot}) is full. Please choose a different time slot.`);
+      setBooking(false);
+      return;
+    }
     try {
       const apt = await createAppointment({
         patientName: form.name, patientAge: form.age, patientGender: form.gender,
@@ -1273,8 +1284,7 @@ function CaseView({ selectedCase, onBack }: { selectedCase: typeof demoConsultat
           </div>
           <div className="rounded-2xl border border-kiosk-teal/20 bg-kiosk-teal/5 p-4">
             <h3 className="flex items-center gap-2 text-sm font-black text-kiosk-navy"><Brain size={16} className="text-kiosk-teal"/>AI summary</h3>
-            <p className="mt-2 text-xs font-medium text-foreground/60">{draft.complaint} â€” {draft.history.slice(0,80)}{draft.history.length>80?"â€¦":""}</p>
-            <p className="mt-2 text-[10px] font-black text-kiosk-coral">AI draft â€” physician verification required.</p>
+            <p className="mt-2 text-xs font-medium text-foreground/60">{draft.complaint} — {draft.history.slice(0,80)}{draft.history.length>80?"…":""}</p>
           </div>
         </div>
       </div>
@@ -1293,7 +1303,6 @@ function Section({ title, icon, text, source, draft: isDraft = false, editing = 
       :<p className="mt-2 text-sm font-medium text-foreground/65 leading-relaxed">{text}</p>}
       <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-black text-kiosk-teal">
         <span>{source}</span>
-        {isDraft&&<span className="rounded-full bg-kiosk-yellow/25 border border-kiosk-yellow/30 px-2 py-0.5 text-kiosk-navy">AI draft</span>}
         {editing&&<span className="rounded-full bg-kiosk-teal/15 border border-kiosk-teal/20 px-2 py-0.5">Editing</span>}
       </div>
     </div>
