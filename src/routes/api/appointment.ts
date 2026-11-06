@@ -143,7 +143,7 @@ function seed() {
     queuePosition: 2, estimatedWait: 14,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     updatedAt: new Date().toISOString(),
-    notes: "Pre-consultation completed via MediEase. Hemoglobin below reference range.",
+    notes: "Pre-consultation completed via Sehat Setu. Hemoglobin below reference range.",
     reminders: [{
       id: "REM-001", appointmentId: "APT-0101", channel: "sms",
       scheduledFor: new Date(Date.now() - 7200000).toISOString(),

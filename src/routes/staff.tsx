@@ -31,7 +31,7 @@ import {
 export const Route = createFileRoute("/staff")({
   head: () => ({
     meta: [
-      { title: "MediEase — Staff Portal" },
+      { title: "Sehat Setu — Staff Portal" },
       { name: "description", content: "Hospital staff appointment management — book, track, remind, follow up." },
     ],
   }),
@@ -113,9 +113,9 @@ function StaffPage() {
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground/50 hover:text-kiosk-teal" aria-label="menu">
               <Menu size={20} />
             </button>
-            <img src="/logo.png" alt="MediEase" className="size-8 rounded-lg object-contain" />
+            <img src="/logo.png" alt="Sehat Setu" className="size-8 rounded-lg object-contain" />
             <div>
-              <p className="text-sm font-black text-kiosk-navy">MediEase Staff</p>
+              <p className="text-sm font-black text-kiosk-navy">Sehat Setu Staff</p>
               <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Reception · Front Desk</p>
             </div>
           </div>
@@ -605,7 +605,7 @@ function BookView({ onBooked }: { onBooked: () => void }) {
     }
     setLoading(true); setError(null);
     if (sameSlot.length >= capacity) {
-      console.warn(`[MediEase] Overbooking: slot ${form.timeSlot} has ${sameSlot.length} bookings (capacity ${capacity})`);
+      console.warn(`[Sehat Setu] Overbooking: slot ${form.timeSlot} has ${sameSlot.length} bookings (capacity ${capacity})`);
     }
     try {
       const apt = await createAppointment({

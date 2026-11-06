@@ -32,7 +32,7 @@ import { QRCodeSVG } from "qrcode.react";
 export const Route = createFileRoute("/portal")({
   head: () => ({
     meta: [
-      { title: "MediEase — My Appointments & Health Portal" },
+      { title: "Sehat Setu — My Appointments & Health Portal" },
       { name: "description", content: "Check your appointment status, queue position, reminders and follow-ups." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
     ],
@@ -104,9 +104,9 @@ function PortalPage() {
       <header className="sticky top-0 z-30 border-b border-border/40 bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="MediEase" className="size-9 rounded-xl object-contain" />
+            <img src="/logo.png" alt="Sehat Setu" className="size-9 rounded-xl object-contain" />
             <div>
-              <p className="text-sm font-black text-kiosk-navy">MediEase</p>
+              <p className="text-sm font-black text-kiosk-navy">Sehat Setu</p>
               <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Patient Portal</p>
             </div>
           </div>

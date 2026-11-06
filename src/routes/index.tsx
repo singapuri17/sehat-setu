@@ -41,9 +41,9 @@ import { QRCodeSVG } from "qrcode.react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MediEase — Book Your Appointment" },
+      { title: "Sehat Setu — Book Your Appointment" },
       { name: "description", content: "Book a hospital appointment, check your queue position and get SMS reminders." },
-      { property: "og:title", content: "MediEase — Digital Health & Appointment System" },
+      { property: "og:title", content: "Sehat Setu — Digital Health & Appointment System" },
       { property: "og:type", content: "website" },
     ],
   }),
@@ -263,9 +263,9 @@ function App() {
       <header className="sticky top-0 z-30 border-b border-border/40 bg-white/95 backdrop-blur-sm shadow-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <a href="/" className="flex items-center gap-2.5 no-underline">
-            <img src="/logo.png" alt="MediEase" className="size-9 rounded-xl object-contain" />
+            <img src="/logo.png" alt="Sehat Setu" className="size-9 rounded-xl object-contain" />
             <div>
-              <p className="text-base font-black tracking-tight text-kiosk-navy">MediEase</p>
+              <p className="text-base font-black tracking-tight text-kiosk-navy">Sehat Setu</p>
               <p className="text-[9px] font-semibold uppercase tracking-widest text-kiosk-teal/70">Digital Health & Appointment System</p>
             </div>
           </a>
@@ -948,11 +948,11 @@ function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selec
       <div className="w-full max-w-md rounded-3xl border border-border/50 bg-white p-8 shadow-xl">
         <div className="mb-6 flex items-center gap-3">
           <div className="grid size-12 place-items-center rounded-2xl bg-kiosk-teal text-white shadow-lg shadow-kiosk-teal/30"><Stethoscope size={22} /></div>
-          <div><p className="text-2xl font-black text-kiosk-navy">Doctor sign in</p><p className="text-xs font-medium text-foreground/45">MediEase · demo</p></div>
+          <div><p className="text-2xl font-black text-kiosk-navy">Doctor sign in</p><p className="text-xs font-medium text-foreground/45">Sehat Setu · demo</p></div>
         </div>
         <div className="rounded-xl bg-kiosk-teal/5 border border-kiosk-teal/20 p-4 text-sm font-medium text-kiosk-navy mb-4 space-y-1">
           <p className="font-bold">Demo credentials:</p>
-          <p className="text-foreground/60">Email: doctor@MediEase.demo</p>
+          <p className="text-foreground/60">Email: doctor@Sehat Setu.demo</p>
           <p className="text-foreground/60">Password: demo123</p>
         </div>
         <Button onClick={() => setView("dashboard")} className="w-full min-h-12 rounded-2xl bg-kiosk-teal font-black text-white hover:bg-kiosk-teal/90">
@@ -978,8 +978,8 @@ function DoctorShell({ view, setView, selectedPatient, setSelectedPatient, selec
   const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
     <div className={`flex flex-col ${mobile ? "h-full" : "h-full"}`}>
       <div className={`flex items-center gap-3 border-b border-white/10 pb-5 ${mobile ? "mb-2" : ""}`}>
-        <img src="/logo.png" alt="MediEase" className="size-9 rounded-xl object-contain" />
-        <div><p className="text-base font-black">MediEase</p><p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Physician desk</p></div>
+        <img src="/logo.png" alt="Sehat Setu" className="size-9 rounded-xl object-contain" />
+        <div><p className="text-base font-black">Sehat Setu</p><p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Physician desk</p></div>
         {mobile && <button onClick={() => setSidebarOpen(false)} className="ml-auto text-white/40 hover:text-white"><X size={18} /></button>}
       </div>
       <nav className="mt-4 flex-1 space-y-1">

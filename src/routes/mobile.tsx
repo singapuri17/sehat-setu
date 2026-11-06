@@ -33,7 +33,7 @@ import {
 export const Route = createFileRoute("/mobile")({
   head: () => ({
     meta: [
-      { title: "MediEase — Mobile Pre-Consultation" },
+      { title: "Sehat Setu — Mobile Pre-Consultation" },
       { name: "description", content: "Complete your pre-consultation on your phone before reaching the OPD counter." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
     ],
@@ -253,9 +253,9 @@ function MobilePage() {
       <header className="sticky top-0 z-30 border-b border-border/40 bg-white/90 backdrop-blur-sm px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="MediEase" className="size-8 rounded-xl object-contain" />
+            <img src="/logo.png" alt="Sehat Setu" className="size-8 rounded-xl object-contain" />
             <div>
-              <p className="text-sm font-black text-kiosk-navy">MediEase</p>
+              <p className="text-sm font-black text-kiosk-navy">Sehat Setu</p>
               <p className="text-[9px] font-bold uppercase tracking-widest text-kiosk-teal/70">Mobile intake</p>
             </div>
           </div>
@@ -339,12 +339,12 @@ function MobileWelcome({ t, lang, setLang, sessionId, onStart }: {
     <div className="mk-rise space-y-6 pt-2">
       <div className="text-center">
         <div className="relative mx-auto mb-4 size-20">
-          <img src="/logo.png" alt="MediEase" className="size-20 rounded-[18px] object-contain drop-shadow-xl" />
+          <img src="/logo.png" alt="Sehat Setu" className="size-20 rounded-[18px] object-contain drop-shadow-xl" />
           <span className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-xl bg-kiosk-coral text-white shadow-md">
             <HeartPulse size={14} />
           </span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-kiosk-navy">MediEase</h1>
+        <h1 className="text-3xl font-black tracking-tight text-kiosk-navy">Sehat Setu</h1>
         <p className="mt-1 text-sm font-bold text-kiosk-teal">{t("AI-assisted pre-consultation")}</p>
         <p className="mt-3 text-sm font-medium leading-relaxed text-foreground/60 max-w-xs mx-auto">
           Complete your pre-consultation on your phone before reaching the OPD counter.

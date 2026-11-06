@@ -1,7 +1,7 @@
 /**
  * sessionService.ts
  *
- * Lightweight client-side session management for MediEase.
+ * Lightweight client-side session management for Sehat Setu.
  *
  * A "session" ties together a patient's in-progress or completed clinical
  * intake regardless of which channel they used (kiosk or mobile).
@@ -34,7 +34,7 @@ export interface MediSession {
   }>;
 }
 
-const SESSION_KEY = "MediEase_session_id";
+const SESSION_KEY = "Sehat Setu_session_id";
 
 // â”€â”€â”€ ID generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -116,6 +116,6 @@ export function mobileUrl(sessionId: string): string {
   const base =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://MediEase.vercel.app";
+      : "https://Sehat Setu.vercel.app";
   return `${base}/mobile?session=${sessionId}`;
 }

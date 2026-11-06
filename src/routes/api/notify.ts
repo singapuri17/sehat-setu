@@ -49,7 +49,7 @@ export const APIRoute = createAPIFileRoute("/api/notify")({
 
     if (body.channel === "sms" || body.channel === "both") {
       // Simulate SMS dispatch
-      console.log(`[MediEase Notify] SMS â†’ ${body.phone ?? "on-file"} | Apt: ${body.appointmentId}`);
+      console.log(`[Sehat Setu Notify] SMS â†’ ${body.phone ?? "on-file"} | Apt: ${body.appointmentId}`);
       console.log(`  Message: ${body.message}`);
       results.push({
         channel: "sms",
@@ -62,7 +62,7 @@ export const APIRoute = createAPIFileRoute("/api/notify")({
 
     if (body.channel === "email" || body.channel === "both") {
       // Simulate email dispatch
-      console.log(`[MediEase Notify] Email â†’ ${body.email ?? "on-file"} | Apt: ${body.appointmentId}`);
+      console.log(`[Sehat Setu Notify] Email â†’ ${body.email ?? "on-file"} | Apt: ${body.appointmentId}`);
       console.log(`  Message: ${body.message}`);
       results.push({
         channel: "email",

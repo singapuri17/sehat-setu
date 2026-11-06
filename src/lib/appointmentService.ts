@@ -90,7 +90,7 @@ export const demoAppointments: Appointment[] = [
     estimatedWait: 14,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     updatedAt: new Date().toISOString(),
-    notes: "Pre-consultation completed via MediEase. Hemoglobin below reference range.",
+    notes: "Pre-consultation completed via Sehat Setu. Hemoglobin below reference range.",
     reminders: [
       {
         id: "REM-001",
